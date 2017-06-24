@@ -97,29 +97,6 @@ public class BmpParser {
         pictureData = Arrays.copyOfRange(fileData, pictureOffset, pictureOffset + pictureSize);
     }
 
-    /**
-     * Writes the BMP to the same file this parser was initialized with.  Equivalent to {@code writeImage(file.getAbsolutePath())},
-     * where {@code file} is the File representation of the file this parser was initialized with.
-     */
-    public void writeImage() throws IOException {
-        writeImage(file.getAbsolutePath());
-    }
-
-    /**
-     * Writes the BMP to the specified output file.  Only modifies the reserved bytes section, everything else is left as-is.
-     *
-     * @param outputPath The output file path.
-     * @throws IOException If an I/O error occurs.
-     */
-    public void writeImage(String outputPath) throws IOException {
-        //Update reserved bytes info
-        int offset = 6;
-        for (int i = 0; i < reservedBytes.length; i++) {
-            fileData[i + offset] = reservedBytes[i];
-        }
-        Files.write(new File(outputPath).toPath(), fileData);
-    }
-
     public String getId() {
         return id;
     }
@@ -182,6 +159,10 @@ public class BmpParser {
 
     public int getNumImportantColors() {
         return numImportantColors;
+    }
+
+    public byte[] getHeader() {
+        return Arrays.copyOfRange(fileData, 0, pictureOffset);
     }
 
     @Override

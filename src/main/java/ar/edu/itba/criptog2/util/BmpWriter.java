@@ -81,6 +81,20 @@ public class BmpWriter {
         fos.close();
     }
 
+    /**
+     * Writes the BMP to the file this writer was initialized with. Duplicates the header from a different supplied BmpParser.
+     *
+     * @param originalPictureParser Parser of the original picture, from where to copy the header.
+     * @throws IOException If an I/O error occurs.
+     */
+    public void writeImage(BmpParser originalPictureParser) throws IOException {
+        BmpParser la = new BmpParser("img/Albertssd.bmp");
+        FileOutputStream fos = new FileOutputStream(this.file);
+        fos.write(originalPictureParser.getHeader());
+        fos.write(pictureData);
+        fos.close();
+    }
+
     public String getId() {
         return id;
     }
