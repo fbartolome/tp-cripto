@@ -12,7 +12,7 @@ import java.util.Arrays;
  */
 public class BmpWriter {
 
-    private final File file;
+    private File file;
     private byte[] fileData;
     private String id;
     private int fileSize;
@@ -47,6 +47,29 @@ public class BmpWriter {
             throw new IllegalArgumentException("Image is not readable");
         }
         parse();
+    }
+
+    private BmpWriter(BmpWriterBuilder builder) {
+        this.file = builder.file;
+        this.fileData = builder.fileData;
+        this.id = builder.id;
+        this.fileSize = builder.fileSize;
+        this.reservedBytes = builder.reservedBytes;
+        this.pictureOffset = builder.pictureOffset;
+        this.infoHeaderLength = builder.infoHeaderLength;
+        this.width = builder.width;
+        this.height = builder.height;
+        this.numPlanes = builder.numPlanes;
+        this.bitsPerPixel = builder.bitsPerPixel;
+        this.compressionType = builder.compressionType;
+        this.pictureSize = builder.pictureSize;
+        this.horizontalResolution = builder.horizontalResolution;
+        this.verticalResolution = builder.verticalResolution;
+        this.numUsedColors = builder.numUsedColors;
+        this.numImportantColors = builder.numImportantColors;
+        this.pictureData = builder.pictureData;
+        this.extraHeaderBytes = builder.extraHeaderBytes;
+        this.extraPictureBytes = builder.extraPictureBytes;
     }
 
     /**
@@ -189,5 +212,131 @@ public class BmpWriter {
         ByteBuffer bb = ByteBuffer.wrap(parsedBytes);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         return bb.getInt();
+    }
+
+    public static class BmpWriterBuilder {
+        private File file;
+        private byte[] fileData;
+        private String id = "BM";
+        private int fileSize;
+        byte[] reservedBytes;
+        int pictureOffset;
+        private int infoHeaderLength;
+        private int width, height;
+        private int numPlanes;
+        private int bitsPerPixel;
+        private int compressionType;
+        private int pictureSize;
+        private int horizontalResolution;
+        private int verticalResolution;
+        private int numUsedColors;
+        private int numImportantColors;
+        private byte[] pictureData;
+        private byte[] extraHeaderBytes;
+        private byte[] extraPictureBytes = new byte[0];
+
+        public BmpWriterBuilder file(File file) {
+            this.file = file;
+            return this;
+        }
+
+        public BmpWriterBuilder fileData(byte[] fileData) {
+            this.fileData = fileData;
+            return this;
+        }
+
+        public BmpWriterBuilder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public BmpWriterBuilder fileSize(int fileSize) {
+            this.fileSize = fileSize;
+            return this;
+        }
+
+        public BmpWriterBuilder reservedBytes(byte[] reservedBytes) {
+            this.reservedBytes = reservedBytes;
+            return this;
+        }
+
+        public BmpWriterBuilder pictureOffset(int pictureOffset) {
+            this.pictureOffset = pictureOffset;
+            return this;
+        }
+
+        public BmpWriterBuilder infoHeaderLength(int infoHeaderLength) {
+            this.infoHeaderLength = infoHeaderLength;
+            return this;
+        }
+
+        public BmpWriterBuilder width(int width) {
+            this.width = width;
+            return this;
+        }
+
+        public BmpWriterBuilder height(int height) {
+            this.height = height;
+            return this;
+        }
+
+        public BmpWriterBuilder numPlanes(int numPlanes) {
+            this.numPlanes = numPlanes;
+            return this;
+        }
+
+        public BmpWriterBuilder bitsPerPixel(int bitsPerPixel) {
+            this.bitsPerPixel = bitsPerPixel;
+            return this;
+        }
+
+        public BmpWriterBuilder compressionType(int compressionType) {
+            this.compressionType = compressionType;
+            return this;
+        }
+
+        public BmpWriterBuilder pictureSize(int pictureSize) {
+            this.pictureSize = pictureSize;
+            return this;
+        }
+
+        public BmpWriterBuilder horizontalResolution(int horizontalResolution) {
+            this.horizontalResolution = horizontalResolution;
+            return this;
+        }
+
+        public BmpWriterBuilder verticalResolution(int verticalResolution) {
+            this.verticalResolution = verticalResolution;
+            return this;
+        }
+
+        public BmpWriterBuilder numUsedColors(int numUsedColors) {
+            this.numUsedColors = numUsedColors;
+            return this;
+        }
+
+        public BmpWriterBuilder numImportantColors(int numImportantColors) {
+            this.numImportantColors = numImportantColors;
+            return this;
+        }
+
+        public BmpWriterBuilder pictureData(byte[] pictureData) {
+            this.pictureData = pictureData;
+            return this;
+        }
+
+        public BmpWriterBuilder extraHeaderBytes(byte[] extraHeaderBytes) {
+            this.extraHeaderBytes = extraHeaderBytes;
+            return this;
+        }
+
+        public BmpWriterBuilder extraPictureBytes(byte[] extraPictureBytes) {
+            this.extraPictureBytes = extraPictureBytes;
+            return this;
+        }
+
+        public BmpWriter build() {
+            return new BmpWriter(this);
+        }
     }
 }
