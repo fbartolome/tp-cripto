@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 /**
  * Simple BMP writer. Initialized with basic BMP data, and can write out BMP to file.
@@ -58,6 +59,7 @@ public class BmpWriter {
      * @throws IOException If an I/O error occurs.
      */
     public void writeImage() throws IOException {
+        BmpParser la = new BmpParser("img/Albertssd.bmp");
         FileOutputStream fos = new FileOutputStream(this.file);
         fos.write(id.getBytes());
         fos.write(intToBytes(fileSize));
@@ -66,8 +68,8 @@ public class BmpWriter {
         fos.write(intToBytes(infoHeaderLength));
         fos.write(intToBytes(width));
         fos.write(intToBytes(height));
-        fos.write(intToBytes(numPlanes));
-        fos.write(intToBytes(bitsPerPixel));
+        fos.write(intToBytes(numPlanes, 2));
+        fos.write(intToBytes(bitsPerPixel, 2));
         fos.write(intToBytes(compressionType));
         fos.write(intToBytes(pictureSize));
         fos.write(intToBytes(horizontalResolution));
@@ -148,13 +150,18 @@ public class BmpWriter {
      * Convert an int to byte array. See {@link BmpParser#bytesToInt(byte[])} for original source.
      *
      * @param number The int to convert to bytes.
+     * @param size The output byte array size. E.g. 2 for WORD, 4 for DWORD.
      * @return The converted byte array.
      */
-    private byte[] intToBytes(int number) {
+    private byte[] intToBytes(int number, int size) {
         ByteBuffer bb = ByteBuffer.allocate(4);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         bb.putInt(number);
-        return bb.array();
+        return Arrays.copyOfRange(bb.array(), 0, size);
+    }
+
+    private byte[] intToBytes(int number) {
+        return intToBytes(number, 4);
     }
 
     public static class BmpWriterBuilder {
