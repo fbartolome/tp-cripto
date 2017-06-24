@@ -30,7 +30,6 @@ public class BmpParser {
     private int numImportantColors;
     private byte[] pictureData;
     private byte[] extraHeaderBytes;
-    private byte[] extraPictureBytes = new byte[0];
 
     public BmpParser(String bitmapImagePath) throws IOException {
         if(bitmapImagePath == null || bitmapImagePath.isEmpty()) {
@@ -67,18 +66,35 @@ public class BmpParser {
         width = bytesToInt(Arrays.copyOfRange(fileData, 18, 22));
         height = bytesToInt(Arrays.copyOfRange(fileData, 22, 26));
         numPlanes = bytesToInt(Arrays.copyOfRange(fileData, 26, 28));
+
         bitsPerPixel = bytesToInt(Arrays.copyOfRange(fileData, 28, 30));
+        if(bitsPerPixel != 8) {
+            throw new IllegalArgumentException("Provided BMP does not use 8 bits per pixel. Only 8 bits per pixel is supported.");
+        }
+
         compressionType = bytesToInt(Arrays.copyOfRange(fileData, 30, 34));
+
         pictureSize = bytesToInt(Arrays.copyOfRange(fileData, 34, 38));
+        //Picture size can be 0 if compression is 0. In this case, picture size = width * height * (bits per pixel / 8)
+        if(pictureSize == 0) {
+            if(compressionType != 0) {
+                throw new IllegalStateException("Provided BMP file doesn't specify picture length and is not uncompressed");
+            } else {
+                //TODO this assumes that bitsPerPixel is always a multiple of 8. What if this isn't the case (e.g. malformed BMP)?
+                pictureSize = width * height * (bitsPerPixel/8);
+            }
+        }
+        // We don't support BMPs that have data after the picture data ends
+        if(pictureOffset + pictureSize < fileSize) {
+            throw new IllegalArgumentException("Provided BMP has trailing data after picture data, this is not supported");
+        }
+
         horizontalResolution = bytesToInt(Arrays.copyOfRange(fileData, 38, 42));
         verticalResolution = bytesToInt(Arrays.copyOfRange(fileData, 42, 46));
         numUsedColors = bytesToInt(Arrays.copyOfRange(fileData, 46, 50));
         numImportantColors = bytesToInt(Arrays.copyOfRange(fileData, 50, 54));
         extraHeaderBytes = Arrays.copyOfRange(fileData, 54, pictureOffset);
         pictureData = Arrays.copyOfRange(fileData, pictureOffset, pictureOffset + pictureSize);
-        if(pictureOffset + pictureSize < fileSize) {
-            extraPictureBytes = Arrays.copyOfRange(fileData, pictureOffset + pictureSize, fileSize);
-        }
     }
 
     /**
