@@ -164,6 +164,10 @@ public class BmpParser {
         return numImportantColors;
     }
 
+    public byte[] getPictureData() {
+        return pictureData;
+    }
+
     @Override
     public String toString() {
         return "BmpParser, parsed " + width + "x" + height + " bitmap image from " + file.getPath();
