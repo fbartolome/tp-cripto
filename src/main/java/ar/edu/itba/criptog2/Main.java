@@ -12,7 +12,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
  */
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 		// https://argparse4j.github.io/usage.html
 
