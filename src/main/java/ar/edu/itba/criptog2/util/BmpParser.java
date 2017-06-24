@@ -214,4 +214,8 @@ public class BmpParser {
     public int getShadowNumber(){
         return bytesToInt(Arrays.copyOfRange(reservedBytes,2,4));
     }
+
+    public int getSeed(){
+        return bytesToInt(Arrays.copyOfRange(reservedBytes,0,2));
+    }
 }

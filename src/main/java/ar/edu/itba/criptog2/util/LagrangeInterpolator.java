@@ -17,7 +17,6 @@ public class LagrangeInterpolator {
         if(size < 2) {
             throw new IllegalArgumentException("Need at least 2 points to interpolate");
         }
-        System.out.println("Interpolating polynomial of degree " + (size-1));
 
         Polynomial nonModuloResult = new Polynomial(0, 0);
         for (int i = 0; i < size; i++) {

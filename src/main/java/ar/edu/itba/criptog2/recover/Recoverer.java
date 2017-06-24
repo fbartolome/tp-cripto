@@ -10,6 +10,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Recoverer implements Worker {
 
@@ -61,15 +62,15 @@ public class Recoverer implements Worker {
 
 //		paso 3: armo el pedacito de imagen del secreto
 			for(int c : coeffs){
-//				System.out.println(c);
-//				System.out.println(Integer.toBinaryString(c & 255 | 256).substring(1));
 				secretPicture[byteCount++] = (byte)c;
 			}
 
 //		paso 4: repito el procedimiento
+
 		}
 
 //		paso 5: reordeno los bytes de la imagen secreto
+		randomizeTable(pictures.get(0).getSeed());
 	}
 
 	private List<Point> getPoints(int j){
@@ -87,7 +88,17 @@ public class Recoverer implements Worker {
 			byteStr += ((int)picData[8*j + i] & 1);
 //			System.out.println(Integer.toBinaryString((picData[8*j + i]) & 255 | 256).substring(1));
 		}
-//		System.out.println(Integer.parseInt(byteStr, 2));
 		return Integer.parseInt(byteStr, 2);
 	}
+
+	private void randomizeTable(final int seed){
+		Random rnd = new Random(seed);
+		for(int i=0; i < secretPicture.length; i++){
+			secretPicture[i] = (byte) ((int)secretPicture[i] ^ rnd.nextInt(256));
+
+		}
+	}
+
+
+
 }
