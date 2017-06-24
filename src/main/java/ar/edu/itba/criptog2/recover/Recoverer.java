@@ -17,18 +17,22 @@ public class Recoverer implements Worker {
 
 	private int k;
 
+	private byte[] secretPicture;
+
 
 	private Recoverer() {
-		k = 8;
+		this.k = 8;
 		try {
-			pictures.add(new BmpParser("img/Facundossd.bmp"));
-			pictures.add(new BmpParser("img/Gustavossd.bmp"));
-			pictures.add(new BmpParser("img/Jamesssd.bmp"));
-			pictures.add(new BmpParser("img/Albertssd.bmp"));
-			pictures.add(new BmpParser("img/Alfredssd.bmp"));
-			pictures.add(new BmpParser("img/Audreyssd.bmp"));
-			pictures.add(new BmpParser("img/Evassd.bmp"));
-			pictures.add(new BmpParser("img/Marilynssd.bmp"));
+			this.pictures.add(new BmpParser("img/Facundossd.bmp"));
+			this.pictures.add(new BmpParser("img/Gustavossd.bmp"));
+			this.pictures.add(new BmpParser("img/Jamesssd.bmp"));
+			this.pictures.add(new BmpParser("img/Albertssd.bmp"));
+			this.pictures.add(new BmpParser("img/Alfredssd.bmp"));
+			this.pictures.add(new BmpParser("img/Audreyssd.bmp"));
+			this.pictures.add(new BmpParser("img/Marilynssd.bmp"));
+			this.pictures.add(new BmpParser("img/Evassd.bmp"));
+			//TODO: set appropiate size
+			this.secretPicture = new byte[pictures.get(0).getPictureSize()];
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -46,7 +50,7 @@ public class Recoverer implements Worker {
 	public void work() {
 		List<Point> points;
 		LagrangeInterpolator lagrangeInterpolator = new LagrangeInterpolator();
-		//TODO: define limit
+		int byteCount = 0;
 		for(int j = 0; j < pictures.get(0).getPictureSize()/k; j++){
 //		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
 			points = getPoints(j);
@@ -57,9 +61,9 @@ public class Recoverer implements Worker {
 
 //		paso 3: armo el pedacito de imagen del secreto
 			for(int c : coeffs){
-				System.out.println(c);
-				System.out.println(Integer.toBinaryString(c & 255 | 256).substring(1));
-
+//				System.out.println(c);
+//				System.out.println(Integer.toBinaryString(c & 255 | 256).substring(1));
+				secretPicture[byteCount++] = (byte)c;
 			}
 
 //		paso 4: repito el procedimiento
@@ -83,7 +87,7 @@ public class Recoverer implements Worker {
 			byteStr += ((int)picData[8*j + i] & 1);
 //			System.out.println(Integer.toBinaryString((picData[8*j + i]) & 255 | 256).substring(1));
 		}
-		System.out.println(Integer.parseInt(byteStr, 2));
+//		System.out.println(Integer.parseInt(byteStr, 2));
 		return Integer.parseInt(byteStr, 2);
 	}
 }
