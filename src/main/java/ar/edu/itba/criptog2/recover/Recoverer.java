@@ -2,13 +2,16 @@ package ar.edu.itba.criptog2.recover;
 
 import ar.edu.itba.criptog2.Worker;
 import ar.edu.itba.criptog2.util.BmpParser;
+import ar.edu.itba.criptog2.util.BmpWriter;
 import ar.edu.itba.criptog2.util.LagrangeInterpolator;
 import ar.edu.itba.criptog2.util.Polynomial;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -52,25 +55,39 @@ public class Recoverer implements Worker {
 		List<Point> points;
 		LagrangeInterpolator lagrangeInterpolator = new LagrangeInterpolator();
 		int byteCount = 0;
+		int[] coeffs;
+
 		for(int j = 0; j < pictures.get(0).getPictureSize()/k; j++){
 //		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
 			points = getPoints(j);
 
 //		paso 2: encuentro el polinomio
 			Polynomial polynomial = lagrangeInterpolator.interpolate(points,257);
-			int[] coeffs = polynomial.getCoefficients();
+			coeffs = polynomial.getCoefficients();
 
 //		paso 3: armo el pedacito de imagen del secreto
 			for(int c : coeffs){
 				secretPicture[byteCount++] = (byte)c;
 			}
-
-//		paso 4: repito el procedimiento
-
 		}
 
 //		paso 5: reordeno los bytes de la imagen secreto
 		randomizeTable(pictures.get(0).getSeed());
+
+		BmpWriter bmpWriter = new BmpWriter.BmpWriterBuilder()
+				.compressionType(pictures.get(0).getCompressionType()).file(new File("img/secretito.bmp"))
+				.height(pictures.get(0).getHeight())
+				.width(pictures.get(0).getWidth()).horizontalResolution(pictures.get(0).getHorizontalResolution())
+				.verticalResolution(pictures.get(0).getVerticalResolution())
+				.numImportantColors(pictures.get(0).getNumImportantColors())
+				.numUsedColors(pictures.get(0).getNumUsedColors())
+				.pictureData(secretPicture).reservedBytes(pictures.get(0).getReservedBytes())
+				.build();
+		try {
+			bmpWriter.writeImage();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private List<Point> getPoints(int j){
@@ -95,7 +112,6 @@ public class Recoverer implements Worker {
 		Random rnd = new Random(seed);
 		for(int i=0; i < secretPicture.length; i++){
 			secretPicture[i] = (byte) ((int)secretPicture[i] ^ rnd.nextInt(256));
-
 		}
 	}
 

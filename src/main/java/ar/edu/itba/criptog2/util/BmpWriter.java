@@ -33,9 +33,9 @@ public class BmpWriter {
     private BmpWriter(BmpWriterBuilder builder) {
         this.file = builder.outputFile;
         this.id = builder.id;
-        this.fileSize = 14 + 40 + extraPictureBytes.length + builder.pictureData.length;
+        this.fileSize = 14 + 40 + builder.extraHeaderBytes.length + builder.pictureData.length;
         this.reservedBytes = builder.reservedBytes;
-        this.pictureOffset = 14 + 40 + extraPictureBytes.length;
+        this.pictureOffset = 14 + 40 + builder.extraHeaderBytes.length;
         this.infoHeaderLength = 40;
         this.width = builder.width;
         this.height = builder.height;
