@@ -39,7 +39,11 @@ public class LagrangeInterpolator {
         // Apply modulo at the end
         Polynomial result = new Polynomial(0, 0);
         for (int degree = nonModuloResult.getDegree(); degree >= 0 ; degree--) {
-            result = result.plus(new Polynomial(nonModuloResult.getCoefficients()[degree] % modulo, degree));
+            int moduloExponent = nonModuloResult.getCoefficients()[degree] % modulo;
+            if(moduloExponent < 0) {
+                moduloExponent += modulo;
+            }
+            result = result.plus(new Polynomial(moduloExponent, degree));
         }
         return result;
     }

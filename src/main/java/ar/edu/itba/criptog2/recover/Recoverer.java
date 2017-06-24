@@ -1,17 +1,42 @@
 package ar.edu.itba.criptog2.recover;
 
 import ar.edu.itba.criptog2.Worker;
+import ar.edu.itba.criptog2.util.BmpParser;
+import ar.edu.itba.criptog2.util.LagrangeInterpolator;
+import ar.edu.itba.criptog2.util.Polynomial;
 import net.sourceforge.argparse4j.inf.Namespace;
+
+import java.awt.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Recoverer implements Worker {
 
+	private List<BmpParser> pictures = new ArrayList<>();
+
+	private int k;
+
+
 	private Recoverer() {
-		
+		k = 8;
+		try {
+			pictures.add(new BmpParser("img/Facundossd.bmp"));
+			pictures.add(new BmpParser("img/Gustavossd.bmp"));
+			pictures.add(new BmpParser("img/Jamesssd.bmp"));
+			pictures.add(new BmpParser("img/Albertssd.bmp"));
+			pictures.add(new BmpParser("img/Alfredssd.bmp"));
+			pictures.add(new BmpParser("img/Audreyssd.bmp"));
+			pictures.add(new BmpParser("img/Evassd.bmp"));
+			pictures.add(new BmpParser("img/Marilynssd.bmp"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static Recoverer createFromNamespace(final Namespace ns) {
 		final Recoverer recoverer = new Recoverer();
-		
+//		k = ns.getInt("k");
 		// setup recoverer
 		
 		return recoverer;
@@ -19,6 +44,46 @@ public class Recoverer implements Worker {
 	
 	@Override
 	public void work() {
-		
+		List<Point> points;
+		LagrangeInterpolator lagrangeInterpolator = new LagrangeInterpolator();
+		//TODO: define limit
+		for(int j = 0; j < pictures.get(0).getPictureSize()/k; j++){
+//		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
+			points = getPoints(j);
+
+//		paso 2: encuentro el polinomio
+			Polynomial polynomial = lagrangeInterpolator.interpolate(points,257);
+			int[] coeffs = polynomial.getCoefficients();
+
+//		paso 3: armo el pedacito de imagen del secreto
+			for(int c : coeffs){
+				System.out.println(c);
+				System.out.println(Integer.toBinaryString(c & 255 | 256).substring(1));
+
+			}
+
+//		paso 4: repito el procedimiento
+		}
+
+//		paso 5: reordeno los bytes de la imagen secreto
+	}
+
+	private List<Point> getPoints(int j){
+		List<Point> points = new ArrayList<>();
+		for(BmpParser bmp : pictures){
+			points.add(new Point(bmp.getShadowNumber(),getHiddenByte(bmp,j)));
+		}
+		return points;
+	}
+
+	private int getHiddenByte(BmpParser bmp, int j) {
+		byte[] picData = bmp.getPictureData();
+		String byteStr = "";
+		for(int i = 0; i < 8; i++){
+			byteStr += ((int)picData[8*j + i] & 1);
+//			System.out.println(Integer.toBinaryString((picData[8*j + i]) & 255 | 256).substring(1));
+		}
+		System.out.println(Integer.parseInt(byteStr, 2));
+		return Integer.parseInt(byteStr, 2);
 	}
 }

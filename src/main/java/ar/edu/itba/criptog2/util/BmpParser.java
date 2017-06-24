@@ -172,16 +172,16 @@ public class BmpParser {
         return verticalResolution;
     }
 
+    public byte[] getPictureData() {
+        return pictureData;
+    }
+
     public int getNumUsedColors() {
         return numUsedColors;
     }
 
     public int getNumImportantColors() {
         return numImportantColors;
-    }
-
-    public byte[] getPictureData() {
-        return pictureData;
     }
 
     @Override
@@ -209,5 +209,9 @@ public class BmpParser {
         ByteBuffer bb = ByteBuffer.wrap(parsedBytes);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         return bb.getInt();
+    }
+
+    public int getShadowNumber(){
+        return bytesToInt(Arrays.copyOfRange(reservedBytes,2,4));
     }
 }
