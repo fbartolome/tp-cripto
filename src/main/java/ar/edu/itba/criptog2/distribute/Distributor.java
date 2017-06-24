@@ -8,6 +8,7 @@ import java.util.Random;
 
 import ar.edu.itba.criptog2.Worker;
 import ar.edu.itba.criptog2.util.BmpParser;
+import ar.edu.itba.criptog2.util.Polynomial;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 public class Distributor implements Worker {
@@ -68,8 +69,11 @@ public class Distributor implements Worker {
 					throw new IllegalArgumentException(listOfFiles[i].getName() + " should have 8 bits per pixel");
 				}
 				
-				if (carrierParser.getWidth() != distributor.secretBMPParser.getWidth() || carrierParser.getHeight() != distributor.secretBMPParser.getHeight()) {
-					throw new IllegalArgumentException(listOfFiles[i].getName() + " should be " + distributor.secretBMPParser.getWidth() + "x" + distributor.secretBMPParser.getHeight());
+				if (distributor.k == 8) {
+				
+					if (carrierParser.getWidth() != distributor.secretBMPParser.getWidth() || carrierParser.getHeight() != distributor.secretBMPParser.getHeight()) {
+						throw new IllegalArgumentException(listOfFiles[i].getName() + " should be " + distributor.secretBMPParser.getWidth() + "x" + distributor.secretBMPParser.getHeight());
+					}
 				}
 			}
 		}
@@ -77,10 +81,74 @@ public class Distributor implements Worker {
 		return distributor;
 	}
 	
+	private int[] makeEvaluations(final Polynomial p) {
+		int[] evaluations = new int[this.n];
+		
+		for (int i = 0; i < this.n; i++) {
+			evaluations[i] = p.evaluate(i);
+		}
+		return evaluations;
+	}
+	
+	private boolean shouldReevaluate(final int[] evaluations) {
+		for (int i = 0; i < evaluations.length; i++) {
+			if (evaluations[i] == 256) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public void work() {
 		
+//		final BmpWriterBuilder bmpBuilder = new BmpWriterBuilder();
+		final int numberOfPixels = this.secretBMPParser.getWidth() * this.secretBMPParser.getHeight();
+		final byte[] fileData = new byte[numberOfPixels];
 		
+		for (int i = 0; i < numberOfPixels; i++) {
+			fileData[i] = (byte) (this.secretBMPParser.getPictureData()[i] ^ this.randomValues.get(i));
+		}
+		
+		int j = 0;
+		
+		do {
+		
+			// build polynomial
+			Polynomial p = new Polynomial(0, 0);
+			for (int i = 0; i < this.k; i++) {
+				p = p.plus(new Polynomial(fileData[j * this.k + i], i));
+			}
+			
+			boolean done = false;
+			int [] evaluations;
+			
+			do {
+			
+				evaluations = makeEvaluations(p);
+				
+				if (shouldReevaluate(evaluations)) {
+					for (int i = 0; i < this.k; i++) {
+						int coef = p.getCoefficientAt(i);
+						if (coef != 0) {
+							p.alterCoefficientAt(i, coef - 1);
+							break;
+						}
+					}
+				} else {
+					done = true;
+				}
+				
+			} while (!done);
+			
+			for (int i = 0; i < this.n; i++) {
+				this.carrierBMPParsers.get(i).getPictureData()[j] = (byte)evaluations[i];
+			}
+			j++;
+//			bytesCovered += this.k;
+		} while (j < numberOfPixels);
+		
+		//bmpBuilder.bitsPerPixel(8).fileData(fileData);
 		
 	}
 }

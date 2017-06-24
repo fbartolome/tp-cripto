@@ -138,6 +138,15 @@ public class Polynomial {
     public int[] getCoefficients() {
         return Arrays.copyOf(coef, coef.length);
     }
+    
+    public int getCoefficientAt(int index) {
+    	return coef[index];
+    }
+    
+    public Polynomial alterCoefficientAt(int index, int value) {
+    	coef[index] = value;
+    	return this;
+    }
 
     public int getDegree() {
         return deg;
