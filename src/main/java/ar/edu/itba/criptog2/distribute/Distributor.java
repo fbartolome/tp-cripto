@@ -1,15 +1,14 @@
 package ar.edu.itba.criptog2.distribute;
 
-import ar.edu.itba.criptog2.Worker;
-import ar.edu.itba.criptog2.util.BmpParser;
-import net.sourceforge.argparse4j.inf.Namespace;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+
+import ar.edu.itba.criptog2.Worker;
+import ar.edu.itba.criptog2.util.BmpParser;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 public class Distributor implements Worker {
 	
@@ -28,7 +27,8 @@ public class Distributor implements Worker {
 		final Distributor distributor = new Distributor();
 		
 		distributor.k = ns.getInt("k");
-		distributor.n = ns.getInt("n");
+		Optional<Integer> optionalN = Optional.of(ns.getInt("n"));
+		distributor.n = optionalN.orElse(distributor.k);
 		
 		if (distributor.k <= 1) {
 			throw new IllegalArgumentException("k should be equal or greater than 2");
@@ -79,6 +79,8 @@ public class Distributor implements Worker {
 	
 	@Override
 	public void work() {
+		
+		
 		
 	}
 }
