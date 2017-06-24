@@ -27,7 +27,7 @@ public class Distributor implements Worker {
 		final Distributor distributor = new Distributor();
 		
 		distributor.k = ns.getInt("k");
-		Optional<Integer> optionalN = Optional.of(ns.getInt("n"));
+		Optional<Integer> optionalN = Optional.ofNullable(ns.getInt("n"));
 		distributor.n = optionalN.orElse(distributor.k);
 		
 		if (distributor.k <= 1) {
