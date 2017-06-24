@@ -20,7 +20,10 @@ package ar.edu.itba.criptog2.util;
  *
  ******************************************************************************/
 
+import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Polynomial implementation, used for Lagrange interpolation.
@@ -142,7 +145,10 @@ public class Polynomial {
 
     // test client
     public static void main(String[] args) {
-        Polynomial blah = new LagrangeInterpolator().interpolate(new int[] {4, 5}, new int[] {3, 8}, 5);
+        List<Point> blah = new ArrayList<>();
+        blah.add(new Point(4, 3));
+        blah.add(new Point(5, 8));
+        Polynomial blahblah = new LagrangeInterpolator().interpolate(blah, 5);
 
 
         Polynomial zero = new Polynomial(0, 0);

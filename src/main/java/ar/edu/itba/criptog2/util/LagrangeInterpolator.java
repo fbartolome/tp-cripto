@@ -1,37 +1,37 @@
 package ar.edu.itba.criptog2.util;
 
+import java.awt.Point;
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Created by juanlipuma on Jun/24/17.
  */
 public class LagrangeInterpolator {
 
-    public Polynomial interpolate(int[] xs, int[] ys, int modulo) {
-        if(xs == null || ys == null) {
+    public Polynomial interpolate(List<Point> points, int modulo) {
+        if(points == null) {
             throw new IllegalArgumentException("xs and ys must not be null");
         }
-        if(xs.length != ys.length) {
-            throw new IllegalArgumentException("Xs length and Ys length must be equal");
-        }
-        if(xs.length < 2) {
+        int size = points.size();
+        if(size < 2) {
             throw new IllegalArgumentException("Need at least 2 points to interpolate");
         }
-        System.out.println("Interpolating polynomial of degree " + (ys.length-1));
+        System.out.println("Interpolating polynomial of degree " + (size-1));
 
         Polynomial nonModuloResult = new Polynomial(0, 0);
-        for (int i = 0; i < xs.length; i++) {
+        for (int i = 0; i < size; i++) {
 //            Polynomial numerator = new Polynomial(ys[i], 0); //ys[i] * x^0
             Polynomial numerator = new Polynomial(1, 0); //1 * x^0
             int denominator = 1;
-            for (int j = 0; j < xs.length; j++) {
+            for (int j = 0; j < size; j++) {
                 if(j != i) {
-                    denominator *= (xs[i] - xs[j]);
-                    Polynomial x = new Polynomial(1, 1).minus(new Polynomial(xs[j], 0)); // (1 * x^1 - xs[i] * x^0)
+                    denominator *= (points.get(i).getX() - points.get(j).getX());
+                    Polynomial x = new Polynomial(1, 1).minus(new Polynomial((int)points.get(j).getX(), 0)); // (1 * x^1 - xs[i] * x^0)
                     numerator = numerator.times(x);
                 }
             }
-            int coefficient = ys[i] * modInverse(denominator, modulo);
+            int coefficient = (int)points.get(i).getY() * modInverse(denominator, modulo);
             Polynomial term = numerator.times(new Polynomial(coefficient, 0));
             nonModuloResult = nonModuloResult.plus(term);
         }
