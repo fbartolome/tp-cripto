@@ -49,7 +49,7 @@ public class Distributor implements Worker {
 		distributor.randomValues = new ArrayList<>(numberOfPixels);
 		
 		for (int i = 0; i < numberOfPixels; i++) {
-			distributor.randomValues.set(i, rnd.nextInt(256));
+			distributor.randomValues.add(i, rnd.nextInt(256));
 		}
 		
 		final Optional<String> carrierDirectory = Optional.of(ns.getString("dir"));
