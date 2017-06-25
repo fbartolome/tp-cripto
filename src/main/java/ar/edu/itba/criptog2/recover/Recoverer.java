@@ -27,14 +27,27 @@ public class Recoverer implements Worker {
 	private Recoverer() {
 		this.k = 8;
 		try {
-			this.pictures.add(new BmpParser("img/Facundossd.bmp"));
-			this.pictures.add(new BmpParser("img/Gustavossd.bmp"));
-			this.pictures.add(new BmpParser("img/Jamesssd.bmp"));
-			this.pictures.add(new BmpParser("img/Albertssd.bmp"));
-			this.pictures.add(new BmpParser("img/Alfredssd.bmp"));
-			this.pictures.add(new BmpParser("img/Audreyssd.bmp"));
-			this.pictures.add(new BmpParser("img/Marilynssd.bmp"));
-			this.pictures.add(new BmpParser("img/Evassd.bmp"));
+
+//			this.pictures.add(new BmpParser("img/secretdiego/Facundo.bmp"));
+//			this.pictures.add(new BmpParser("img/secretdiego/james.bmp"));
+
+//			this.pictures.add(new BmpParser("img/grupo2/Facundossd.bmp"));
+//			this.pictures.add(new BmpParser("img/grupo2/Gustavossd.bmp"));
+//			this.pictures.add(new BmpParser("img/grupo2/Jamesssd.bmp"));
+//			this.pictures.add(new BmpParser("img/grupo2/Albertssd.bmp"));
+//			this.pictures.add(new BmpParser("img/grupo2/Alfredssd.bmp"));
+//			this.pictures.add(new BmpParser("img/grupo2/Audreyssd.bmp"));
+//			this.pictures.add(new BmpParser("img/grupo2/Marilynssd.bmp"));
+//			this.pictures.add(new BmpParser("img/grupo2/Evassd.bmp"));
+
+			this.pictures.add(new BmpParser("img/sombras/sombra1.bmp"));
+			this.pictures.add(new BmpParser("img/sombras/sombra2.bmp"));
+			this.pictures.add(new BmpParser("img/sombras/sombra3.bmp"));
+			this.pictures.add(new BmpParser("img/sombras/sombra4.bmp"));
+			this.pictures.add(new BmpParser("img/sombras/sombra5.bmp"));
+			this.pictures.add(new BmpParser("img/sombras/sombra6.bmp"));
+			this.pictures.add(new BmpParser("img/sombras/sombra7.bmp"));
+			this.pictures.add(new BmpParser("img/sombras/sombra8.bmp"));
 			//TODO: set appropiate size
 			this.secretPicture = new byte[pictures.get(0).getPictureSize()];
 		} catch (IOException e) {
