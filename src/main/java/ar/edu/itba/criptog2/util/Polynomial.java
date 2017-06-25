@@ -155,9 +155,10 @@ public class Polynomial {
     // test client
     public static void main(String[] args) {
         List<Point> blah = new ArrayList<>();
-        blah.add(new Point(4, 3));
-        blah.add(new Point(5, 8));
-        Polynomial blahblah = new LagrangeInterpolator().interpolate(blah, 5);
+        blah.add(new Point(1, 3));
+        blah.add(new Point(2, 5));
+        blah.add(new Point(4, 0));
+        Polynomial blahblah = new LagrangeInterpolator().interpolate(blah, 7);
 
 
         Polynomial zero = new Polynomial(0, 0);

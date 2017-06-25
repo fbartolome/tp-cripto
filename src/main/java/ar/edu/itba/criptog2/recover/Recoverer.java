@@ -66,7 +66,11 @@ public class Recoverer implements Worker {
 			coeffs = polynomial.getCoefficients();
 
 //		paso 3: armo el pedacito de imagen del secreto
-			for(int c : coeffs){
+            // Hay algunos polinomios que quedan con sus coeficientes de mayor grado en 0. Escribir estos 0s.
+            for (int i = coeffs.length; i < 8 ; i++) {
+                secretPicture[byteCount++] = 0;
+            }
+            for(int c : coeffs){
 				secretPicture[byteCount++] = (byte)c;
 			}
 		}
