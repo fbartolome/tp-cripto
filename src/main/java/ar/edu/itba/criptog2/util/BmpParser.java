@@ -141,11 +141,15 @@ public class BmpParser {
         return pictureSize;
     }
 
-    public int getHorizontalResolution() {
+    /*
+     * We will use the HORIZONTAL and VERTICAL RESOLUTION fields to our convenience, even though they are not reserved.
+     * We will store the secret image's dimensions in these fields.
+     */
+    public int getSecretWidth() {
         return horizontalResolution;
     }
 
-    public int getVerticalResolution() {
+    public int getSecretHeight() {
         return verticalResolution;
     }
 

@@ -139,11 +139,15 @@ public class BmpWriter {
         return pictureSize;
     }
 
-    public int getHorizontalResolution() {
+    /*
+     * We will use the HORIZONTAL and VERTICAL RESOLUTION fields to our convenience, even though they are not reserved.
+     * We will store the secret image's dimensions in these fields.
+     */
+    public int getSecretWidth() {
         return horizontalResolution;
     }
 
-    public int getVerticalResolution() {
+    public int getSecretHeight() {
         return verticalResolution;
     }
 
@@ -226,13 +230,13 @@ public class BmpWriter {
             return this;
         }
 
-        public BmpWriterBuilder horizontalResolution(int horizontalResolution) {
-            this.horizontalResolution = horizontalResolution;
+        public BmpWriterBuilder secretWidth(int secretWidth) {
+            this.horizontalResolution = secretWidth;
             return this;
         }
 
-        public BmpWriterBuilder verticalResolution(int verticalResolution) {
-            this.verticalResolution = verticalResolution;
+        public BmpWriterBuilder secretHeight(int secretHeight) {
+            this.verticalResolution = secretHeight;
             return this;
         }
 
@@ -269,8 +273,8 @@ public class BmpWriter {
                 .width(parser.getWidth())
                 .height(parser.getHeight())
                 .compressionType(parser.getCompressionType())
-                .horizontalResolution(parser.getHorizontalResolution())
-                .verticalResolution(parser.getVerticalResolution())
+                .secretWidth(parser.getSecretWidth())
+                .secretHeight(parser.getSecretHeight())
                 .numUsedColors(parser.getNumUsedColors())
                 .numImportantColors(parser.getNumImportantColors())
                 .pictureData(parser.getPictureData());
