@@ -11,7 +11,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -24,29 +23,25 @@ public class Recoverer implements Worker {
 	private byte[] secretPicture;
 
 
-	private Recoverer() {
-		this.k = 8;
-		try {
-			this.pictures.add(new BmpParser("img/sombras/sombra1.bmp"));
-			this.pictures.add(new BmpParser("img/sombras/sombra2.bmp"));
-			this.pictures.add(new BmpParser("img/sombras/sombra3.bmp"));
-			this.pictures.add(new BmpParser("img/sombras/sombra4.bmp"));
-			this.pictures.add(new BmpParser("img/sombras/sombra5.bmp"));
-			this.pictures.add(new BmpParser("img/sombras/sombra6.bmp"));
-			this.pictures.add(new BmpParser("img/sombras/sombra7.bmp"));
-			this.pictures.add(new BmpParser("img/sombras/sombra8.bmp"));
+	private Recoverer() {}
 
-			this.secretPicture = new byte[pictures.get(0).getPictureSize()];
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public static Recoverer createFromNamespace(final Namespace ns) {
+
 		final Recoverer recoverer = new Recoverer();
-//		k = ns.getInt("k");
-		// setup recoverer
-		
+		recoverer.k = ns.getInt("k");
+
+		//load picture files from path
+		final File[] files = new File(ns.getString("dir")).listFiles();
+		for(File f : files){
+			try {
+				if(!f.isDirectory())
+					recoverer.pictures.add(new BmpParser(f.getPath()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		recoverer.secretPicture = new byte[recoverer.pictures.get(0).getPictureSize()];
+
 		return recoverer;
 	}
 	
