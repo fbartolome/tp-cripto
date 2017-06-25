@@ -16,38 +16,39 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 
 		// https://argparse4j.github.io/usage.html
-		final ArgumentParser parser = ArgumentParsers.newArgumentParser("visualSSS").defaultHelp(true).description("Place a description here.");
+		final ArgumentParser parser = ArgumentParsers.newArgumentParser("visualSSS")
+                .defaultHelp(true)
+                .description("Place a description here.")
+                .usage("${prog} -d|-k -secret [FILE] -k [NUMBER] [-n [NUMBER] -dir [DIRECTORY]]");
 
-		//Required Arguments
-		parser.addArgument("-d").dest("distribute").action(Arguments.storeTrue()).required(false).type(String.class).help("Action is to distribute image");
-		parser.addArgument("-r").dest("recover").action(Arguments.storeTrue()).required(false).type(String.class).help("Action is to recover image");
-		parser.addArgument("-secret").dest("secret").required(true).type(String.class).help("File to distribute or recover");
-		parser.addArgument("-k").dest("k").required(true).type(Integer.class).help("k to use");
+        //Required Arguments
+        //Note: -d and -r are both set as required: false because exactly one of the two is required
+		parser.addArgument("-d").dest("distribute").action(Arguments.storeTrue()).required(false).type(String.class).help("Distribute an image");
+		parser.addArgument("-r").dest("recover").action(Arguments.storeTrue()).required(false).type(String.class).help("Recover an image");
+		parser.addArgument("-secret").dest("secret").required(true).type(String.class).help("If used with -d, the image to distribute. If used with -r, the output file for the recovered image.");
+		parser.addArgument("-k").dest("k").required(true).type(Integer.class).help("The minimum number of shadows needed to recover an image.");
 
 		//Optional Arguments
-		parser.addArgument("-n").dest("n").required(false).type(Integer.class).help("n to use");
-		parser.addArgument("-dir").dest("dir").required(false).type(String.class).setDefault("./").help("Directory");
-		
+		parser.addArgument("-n").dest("n").required(false).type(Integer.class).help("Only allowed when used with -d. Total number of shadows to generate. If not provided, will make n the number of pictures in the specified directory.");
+		parser.addArgument("-dir").dest("dir").required(false).type(String.class).setDefault("./").help("If used with -d, directory containing images where secret will be distributed. If used with -r, directory containing images from which to recover the secret. In either case, default is current directory.");
+
 		Namespace ns = null;
 		try {
-			ns = parser.parseArgs(args);
-		} catch (ArgumentParserException e) {
-			parser.handleError(e);
-			System.exit(1);
-		}
-
-		//Exception when one chooses to recover and to distribute an image
-		if(ns.getBoolean("distribute") && ns.getBoolean("recover")){
-			throw new IllegalArgumentException("You can only choose to recover or to distribute an image, not both");
-		}
+            ns = parser.parseArgs(args);
+            //Extra validations
+            if(ns.getBoolean("distribute").equals(ns.getBoolean("recover"))) {
+                throw new ArgumentParserException("Exactly ONE of -d (distribute) or -r (recover) is needed.", parser);
+            }
+        } catch (ArgumentParserException e) {
+            parser.handleError(e);
+            System.exit(1);
+        }
 
 
 		if (ns.getBoolean("distribute")) {
 			Distributor.createFromNamespace(ns).work();
 		} else if(ns.getBoolean("recover")){
 			Recoverer.createFromNamespace(ns).work();
-		}else{
-			throw new IllegalArgumentException("Choose if you want to distribute (-d) or recover an image (-r)");
 		}
 	}
 }
