@@ -16,7 +16,7 @@ public class Distributor implements Worker {
 	private int k;
 	private int n;
 	private BmpParser secretBMPParser;
-	private static final Random rnd = new Random(10);
+	private Random rnd;
 	private List<Integer> randomValues;
 	private List<BmpParser> carrierBMPParsers;
 	
@@ -49,8 +49,10 @@ public class Distributor implements Worker {
 		
 		distributor.randomValues = new ArrayList<>(numberOfPixels);
 		
+		distributor.rnd = new Random(distributor.secretBMPParser.getSeed());
+		
 		for (int i = 0; i < numberOfPixels; i++) {
-			distributor.randomValues.add(i, rnd.nextInt(256));
+			distributor.randomValues.add(i, distributor.rnd.nextInt(256));
 		}
 		
 		final Optional<String> carrierDirectory = Optional.of(ns.getString("dir"));
@@ -154,6 +156,7 @@ public class Distributor implements Worker {
 		
 		for (BmpParser p : this.carrierBMPParsers) {
 			// write to file
+			
 		}
 		
 	}
