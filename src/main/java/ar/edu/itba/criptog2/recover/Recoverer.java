@@ -27,19 +27,6 @@ public class Recoverer implements Worker {
 	private Recoverer() {
 		this.k = 8;
 		try {
-
-//			this.pictures.add(new BmpParser("img/secretdiego/Facundo.bmp"));
-//			this.pictures.add(new BmpParser("img/secretdiego/james.bmp"));
-
-//			this.pictures.add(new BmpParser("img/grupo2/Facundossd.bmp"));
-//			this.pictures.add(new BmpParser("img/grupo2/Gustavossd.bmp"));
-//			this.pictures.add(new BmpParser("img/grupo2/Jamesssd.bmp"));
-//			this.pictures.add(new BmpParser("img/grupo2/Albertssd.bmp"));
-//			this.pictures.add(new BmpParser("img/grupo2/Alfredssd.bmp"));
-//			this.pictures.add(new BmpParser("img/grupo2/Audreyssd.bmp"));
-//			this.pictures.add(new BmpParser("img/grupo2/Marilynssd.bmp"));
-//			this.pictures.add(new BmpParser("img/grupo2/Evassd.bmp"));
-
 			this.pictures.add(new BmpParser("img/sombras/sombra1.bmp"));
 			this.pictures.add(new BmpParser("img/sombras/sombra2.bmp"));
 			this.pictures.add(new BmpParser("img/sombras/sombra3.bmp"));
@@ -48,7 +35,7 @@ public class Recoverer implements Worker {
 			this.pictures.add(new BmpParser("img/sombras/sombra6.bmp"));
 			this.pictures.add(new BmpParser("img/sombras/sombra7.bmp"));
 			this.pictures.add(new BmpParser("img/sombras/sombra8.bmp"));
-			//TODO: set appropiate size
+
 			this.secretPicture = new byte[pictures.get(0).getPictureSize()];
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -79,7 +66,7 @@ public class Recoverer implements Worker {
 			coeffs = polynomial.getCoefficients();
 
 //		paso 3: armo el pedacito de imagen del secreto
-            // Hay algunos polinomios que quedan con sus coeficientes de mayor grado en 0. Escribir estos 0s.
+// 		Hay algunos polinomios que quedan con sus coeficientes de mayor grado en 0. Escribir estos 0s.
             for (int i = coeffs.length; i < 8 ; i++) {
                 secretPicture[byteCount++] = 0;
             }
@@ -120,7 +107,6 @@ public class Recoverer implements Worker {
 		String byteStr = "";
 		for(int i = 0; i < 8; i++){
 			byteStr += ((int)picData[8*j + i] & 1);
-//			System.out.println(Integer.toBinaryString((picData[8*j + i]) & 255 | 256).substring(1));
 		}
 		return Integer.parseInt(byteStr, 2);
 	}
@@ -131,7 +117,4 @@ public class Recoverer implements Worker {
 			secretPicture[i] = (byte) ((int)secretPicture[i] ^ rnd.nextInt(256));
 		}
 	}
-
-
-
 }

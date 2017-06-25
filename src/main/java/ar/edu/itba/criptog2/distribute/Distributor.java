@@ -2,7 +2,6 @@ package ar.edu.itba.criptog2.distribute;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
 import ar.edu.itba.criptog2.Worker;
@@ -17,13 +16,10 @@ public class Distributor implements Worker {
 	private int n;
 	private BmpParser secretBMPParser;
 	private Random rnd;
-	private List<Integer> randomValues;
 	private List<BmpParser> carrierBMPParsers;
     private int seed;
 	
 	private Distributor() {
-		this.k = 8;
-        this.n = 8;
         this.seed = new Random().nextInt(65536);
         this.rnd = new Random(seed);
         this.carrierBMPParsers = new ArrayList<>();
@@ -46,9 +42,9 @@ public class Distributor implements Worker {
 	public static Distributor createFromNamespace(final Namespace ns) throws Exception {
 		final Distributor distributor = new Distributor();
 		
-//		distributor.k = ns.getInt("k");
-//		Optional<Integer> optionalN = Optional.ofNullable(ns.getInt("n"));
-//		distributor.n = optionalN.orElse(distributor.k);
+		distributor.k = ns.getInt("k");
+		Optional<Integer> optionalN = Optional.ofNullable(ns.getInt("n"));
+		distributor.n = optionalN.orElse(distributor.k);
 //
 //		if (distributor.k <= 1) {
 //			throw new IllegalArgumentException("k should be equal or greater than 2");
@@ -122,8 +118,6 @@ public class Distributor implements Worker {
 	
 	@Override
 	public void work() {
-		
-//		final BmpWriterBuilder bmpBuilder = new BmpWriterBuilder();
 		final int numberOfPixels = this.secretBMPParser.getWidth() * this.secretBMPParser.getHeight();
 		final byte[] pictureData = new byte[numberOfPixels];
 		
@@ -166,8 +160,6 @@ public class Distributor implements Worker {
 			// update data in file
 			for (int i = 0; i < this.n; i++) {
 				final BmpParser pa = this.carrierBMPParsers.get(i);
-//				final byte[] picData = pa.getPictureData();
-//				picData[j] = (byte)evaluations[i];
                 hideByte((byte)evaluations[i],j,pa);
 			}
 			j++;
@@ -179,9 +171,6 @@ public class Distributor implements Worker {
             BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
                     .seed(this.seed).shadowNumber(i+1).file(new File("img/sombras/sombra" + (i+1) + ".bmp"))
                     .build();
-            System.out.println("Shadow number: " + (i+1));
-            System.out.println("Seed: " + seed);
-            System.out.println();
             try {
                 writer.writeImage();
             } catch (IOException e) {
