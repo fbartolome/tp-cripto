@@ -181,7 +181,7 @@ public class BmpWriter {
     public static class BmpWriterBuilder {
         private File outputFile;
         private String id = "BM";
-        byte[] reservedBytes;
+        byte[] reservedBytes = new byte[4];
 //        int pictureOffset;
 //        private int infoHeaderLength;
         private int width;
@@ -251,6 +251,18 @@ public class BmpWriter {
             return this;
         }
 
+        public BmpWriterBuilder shadowNumber(int shadowNumber){
+            byte[] shadowNumber2 = intToBytes(shadowNumber, 2);
+            System.arraycopy(shadowNumber2, 0, reservedBytes, 2, 2);
+            return this;
+        }
+
+        public BmpWriterBuilder seed(int seedNumber){
+            byte[] seedNumber2 = intToBytes(seedNumber, 2);
+            System.arraycopy(seedNumber2, 0, reservedBytes, 0, 2);
+            return this;
+        }
+
         public BmpWriterBuilder(BmpParser parser) {
             this.id(parser.getId())
                 .reservedBytes(parser.getReservedBytes())
@@ -268,6 +280,13 @@ public class BmpWriter {
 
         public BmpWriter build() {
             return new BmpWriter(this);
+        }
+
+        private byte[] intToBytes(int number, int size) {
+            ByteBuffer bb = ByteBuffer.allocate(4);
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            bb.putInt(number);
+            return Arrays.copyOfRange(bb.array(), 0, size);
         }
     }
 }
