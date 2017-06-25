@@ -27,13 +27,13 @@ public class Distributor implements Worker {
             this.carrierBMPParsers.add(new BmpParser("img/Albertssd.bmp"));
             this.carrierBMPParsers.add(new BmpParser("img/Alfredssd.bmp"));
             this.carrierBMPParsers.add(new BmpParser("img/Audreyssd.bmp"));
-//            this.carrierBMPParsers.add(new BmpParser("img/Evassd.bmp"));
-//            this.carrierBMPParsers.add(new BmpParser("img/Facundossd.bmp"));
-//            this.carrierBMPParsers.add(new BmpParser("img/Gustavossd.bmp"));
-//            this.carrierBMPParsers.add(new BmpParser("img/Jamesssd.bmp"));
-//            this.carrierBMPParsers.add(new BmpParser("img/Marilynssd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/Evassd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/Facundossd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/Gustavossd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/Jamesssd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/Marilynssd.bmp"));
 
-            this.secretBMPParser = new BmpParser("img/100-75.bmp");
+            this.secretBMPParser = new BmpParser("img/Gustavossd.bmp");
         } catch (IOException e) {
             e.printStackTrace();
         }
