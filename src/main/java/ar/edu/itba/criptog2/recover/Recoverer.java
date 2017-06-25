@@ -34,7 +34,7 @@ public class Recoverer implements Worker {
 		final File[] files = new File(ns.getString("dir")).listFiles();
 		for(File f : files){
 			try {
-				if(!f.isDirectory())
+				if(f.isFile() && f.getName().endsWith(".bmp"))
 					recoverer.pictures.add(new BmpParser(f.getPath()));
 			} catch (IOException e) {
 				e.printStackTrace();
