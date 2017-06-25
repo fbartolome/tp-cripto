@@ -12,8 +12,8 @@ import java.util.Arrays;
  */
 public class BmpParser {
 
-    private final File file;
-    private byte[] fileData;
+    public final File file;
+    public byte[] fileData;
     private String id;
     private int fileSize;
     byte[] reservedBytes;

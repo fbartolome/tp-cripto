@@ -84,7 +84,16 @@ public class Recoverer implements Worker {
 				.pictureData(secretPicture).reservedBytes(pictures.get(0).getReservedBytes())
 				.build();
 		try {
-			bmpWriter.writeImage();
+//			bmpWriter.writeImage();
+			bmpWriter.writeImage(pictures.get(0), pictures.get(1));
+//			for (int i = 0; i < pictures.size(); i++) {
+//				for (int j = 0; j < pictures.size(); j++) {
+//					if(i != j) {
+//						bmpWriter.writeImage(pictures.get(i), pictures.get(j));
+//					}
+//				}
+////				bmpWriter.writeImage(pictures.get(0), pictures.get(i));
+//			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

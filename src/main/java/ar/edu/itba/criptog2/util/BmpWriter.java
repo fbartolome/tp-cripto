@@ -34,9 +34,9 @@ public class BmpWriter {
     private BmpWriter(BmpWriterBuilder builder) {
         this.file = builder.outputFile;
         this.id = builder.id;
-        this.fileSize = 14 + 40 + builder.extraHeaderBytes.length + builder.pictureData.length;
+        this.fileSize = 91078;//14 + 40 + builder.extraHeaderBytes.length + builder.pictureData.length;
         this.reservedBytes = builder.reservedBytes;
-        this.pictureOffset = 14 + 40 + builder.extraHeaderBytes.length;
+        this.pictureOffset = 1078;//14 + 40 + builder.extraHeaderBytes.length;
         this.infoHeaderLength = 40;
         this.width = builder.width;
         this.height = builder.height;
@@ -59,7 +59,6 @@ public class BmpWriter {
      * @throws IOException If an I/O error occurs.
      */
     public void writeImage() throws IOException {
-        BmpParser la = new BmpParser("img/Albertssd.bmp");
         FileOutputStream fos = new FileOutputStream(this.file);
         fos.write(id.getBytes());
         fos.write(intToBytes(fileSize));
@@ -87,8 +86,10 @@ public class BmpWriter {
      * @param originalPictureParser Parser of the original picture, from where to copy the header.
      * @throws IOException If an I/O error occurs.
      */
-    public void writeImage(BmpParser originalPictureParser) throws IOException {
-        BmpParser la = new BmpParser("img/Albertssd.bmp");
+    public void writeImage(BmpParser originalPictureParser, BmpParser otherParser /*TODO delete 2nd param*/) throws IOException {
+        if(originalPictureParser.getPictureOffset() != otherParser.getPictureOffset()/*!Arrays.equals(otherParser.getHeader(), originalPictureParser.getHeader())*/) {
+            System.out.println(originalPictureParser.file.getPath() + " header is different from " + otherParser.file.getPath() + "!");
+        }
         FileOutputStream fos = new FileOutputStream(this.file);
         fos.write(originalPictureParser.getHeader());
         fos.write(pictureData);
