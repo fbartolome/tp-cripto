@@ -40,7 +40,7 @@ public class Recoverer implements Worker {
 				e.printStackTrace();
 			}
 		}
-		recoverer.secretPicture = new byte[recoverer.pictures.get(0).getPictureSize()];
+//		recoverer.secretPicture = new byte[recoverer.pictures.get(0).getPictureSize()];
 
 		return recoverer;
 	}
@@ -51,8 +51,13 @@ public class Recoverer implements Worker {
 		LagrangeInterpolator lagrangeInterpolator = new LagrangeInterpolator();
 		int byteCount = 0;
 		int[] coeffs;
+		int height = k == 8 ? pictures.get(0).getHeight() : pictures.get(0).getSecretHeight();
+		int width = k == 8 ? pictures.get(0).getWidth() : pictures.get(0).getSecretWidth();
+		int secretDataSize = width * height;
+		secretPicture = new byte[secretDataSize];
+		int j = 0;
 
-		for(int j = 0; j < pictures.get(0).getPictureSize()/8; j++){
+		while(byteCount < secretDataSize){
 //		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
 			points = getPoints(j);
 
@@ -62,24 +67,24 @@ public class Recoverer implements Worker {
 
 //		paso 3: armo el pedacito de imagen del secreto
 // 		Hay algunos polinomios que quedan con sus coeficientes de mayor grado en 0. Escribir estos 0s.
-            for (int i = coeffs.length; i < 8 ; i++) {
+            for (int i = coeffs.length; i < k ; i++) {
                 secretPicture[byteCount++] = 0;
             }
             for(int c : coeffs){
 				secretPicture[byteCount++] = (byte)c;
 			}
+			j++;
 		}
 
 //		paso 5: reordeno los bytes de la imagen secreto
 		randomizeTable(pictures.get(0).getSeed());
 
+//		recover secret
 		BmpWriter bmpWriter = new BmpWriter.BmpWriterBuilder()
 				.compressionType(pictures.get(0).getCompressionType()).file(new File("img/secretito.bmp"))
-				.height(pictures.get(0).getHeight())
-				.width(pictures.get(0).getWidth()).secretWidth(pictures.get(0).getSecretWidth())
-				.secretHeight(pictures.get(0).getSecretHeight())
-				.numImportantColors(pictures.get(0).getNumImportantColors())
-				.numUsedColors(pictures.get(0).getNumUsedColors())
+				.height(height).width(width)
+//				.numImportantColors(pictures.get(0).getNumImportantColors())
+//				.numUsedColors(pictures.get(0).getNumUsedColors())
 				.pictureData(secretPicture).reservedBytes(pictures.get(0).getReservedBytes())
 				.build();
 		try {

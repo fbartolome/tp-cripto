@@ -27,13 +27,13 @@ public class Distributor implements Worker {
             this.carrierBMPParsers.add(new BmpParser("img/Albertssd.bmp"));
             this.carrierBMPParsers.add(new BmpParser("img/Alfredssd.bmp"));
             this.carrierBMPParsers.add(new BmpParser("img/Audreyssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Evassd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Facundossd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Gustavossd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Jamesssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Marilynssd.bmp"));
+//            this.carrierBMPParsers.add(new BmpParser("img/Evassd.bmp"));
+//            this.carrierBMPParsers.add(new BmpParser("img/Facundossd.bmp"));
+//            this.carrierBMPParsers.add(new BmpParser("img/Gustavossd.bmp"));
+//            this.carrierBMPParsers.add(new BmpParser("img/Jamesssd.bmp"));
+//            this.carrierBMPParsers.add(new BmpParser("img/Marilynssd.bmp"));
 
-            this.secretBMPParser = new BmpParser("img/Alfredssd.bmp");
+            this.secretBMPParser = new BmpParser("img/JamesMini.bmp");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -169,7 +169,8 @@ public class Distributor implements Worker {
             // write to file
             BmpParser p = this.carrierBMPParsers.get(i);
             BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
-                    .seed(this.seed).shadowNumber(i+1).file(new File("img/sombras/sombra" + (i+1) + ".bmp"))
+                    .seed(this.seed).shadowNumber(i+1).file(new File("img/aaa/sombra" + (i+1) + ".bmp"))
+                    .secretHeight(secretBMPParser.getHeight()).secretWidth(secretBMPParser.getWidth())
                     .build();
             try {
                 writer.writeImage();
