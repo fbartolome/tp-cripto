@@ -22,6 +22,8 @@ public class Recoverer implements Worker {
 
 	private byte[] secretPicture;
 
+	private String secretFilePath;
+
 
 	private Recoverer() {}
 
@@ -29,6 +31,7 @@ public class Recoverer implements Worker {
 
 		final Recoverer recoverer = new Recoverer();
 		recoverer.k = ns.getInt("k");
+		recoverer.secretFilePath = ns.getString("secret");
 
 		//load picture files from path
 		final File[] files = new File(ns.getString("dir")).listFiles();
@@ -81,7 +84,7 @@ public class Recoverer implements Worker {
 
 //		recover secret
 		BmpWriter bmpWriter = new BmpWriter.BmpWriterBuilder()
-				.compressionType(pictures.get(0).getCompressionType()).file(new File("img/secretito.bmp"))
+				.compressionType(pictures.get(0).getCompressionType()).file(new File(secretFilePath))
 				.height(height).width(width)
 //				.numImportantColors(pictures.get(0).getNumImportantColors())
 //				.numUsedColors(pictures.get(0).getNumUsedColors())
