@@ -5,6 +5,9 @@
 	<artifactId>tpcriptog2</artifactId>
 	<version>1.0.0</version>
 
+	<!-- Output to jar format -->
+	<packaging>jar</packaging>
+
 	<repositories>
 		<repository>
 			<id>central</id>
@@ -57,6 +60,20 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>ar.edu.itba.criptog2.Main</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
 				</configuration>
 			</plugin>
 		</plugins>
