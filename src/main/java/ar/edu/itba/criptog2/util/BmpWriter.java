@@ -251,6 +251,21 @@ public class BmpWriter {
             return this;
         }
 
+        public BmpWriterBuilder(BmpParser parser) {
+            this.id(parser.getId())
+                .reservedBytes(parser.getReservedBytes())
+                .width(parser.getWidth())
+                .height(parser.getHeight())
+                .compressionType(parser.getCompressionType())
+                .horizontalResolution(parser.getHorizontalResolution())
+                .verticalResolution(parser.getVerticalResolution())
+                .numUsedColors(parser.getNumUsedColors())
+                .numImportantColors(parser.getNumImportantColors())
+                .pictureData(parser.getPictureData());
+        }
+
+        public BmpWriterBuilder() {}
+
         public BmpWriter build() {
             return new BmpWriter(this);
         }
