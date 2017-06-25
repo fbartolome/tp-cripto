@@ -57,7 +57,7 @@ public class Recoverer implements Worker {
 		int byteCount = 0;
 		int[] coeffs;
 
-		for(int j = 0; j < pictures.get(0).getPictureSize()/k; j++){
+		for(int j = 0; j < pictures.get(0).getPictureSize()/8; j++){
 //		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
 			points = getPoints(j);
 
