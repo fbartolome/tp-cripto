@@ -111,13 +111,15 @@ public class Distributor implements Worker {
 		}
 		
 		int j = 0;
+		int consumedBytes = 0;
 		
 		do {
 		
 			// build polynomial
 			Polynomial p = new Polynomial(0, 0);
 			for (int i = 0; i < this.k; i++) {
-				p = p.plus(new Polynomial(fileData[j * this.k + i], i));
+				p = p.plus(new Polynomial(fileData[consumedBytes], i)); //FIXME: fileData[j + i] ?
+				consumedBytes++;
 			}
 			
 			boolean done = false;
@@ -141,14 +143,18 @@ public class Distributor implements Worker {
 				
 			} while (!done);
 			
+			// update data in file
 			for (int i = 0; i < this.n; i++) {
-				this.carrierBMPParsers.get(i).getPictureData()[j] = (byte)evaluations[i];
+				final BmpParser pa = this.carrierBMPParsers.get(i);
+				final byte[] picData = pa.getPictureData(); 
+				picData[j] = (byte)evaluations[i];
 			}
 			j++;
-//			bytesCovered += this.k;
-		} while (j < numberOfPixels);
+		} while (j < numberOfPixels && consumedBytes < numberOfPixels);
 		
-		//bmpBuilder.bitsPerPixel(8).fileData(fileData);
+		for (BmpParser p : this.carrierBMPParsers) {
+			// write to file
+		}
 		
 	}
 }
