@@ -56,11 +56,11 @@ public class Recoverer implements Worker {
 		int[] coeffs;
 		int height = k == 8 ? pictures.get(0).getHeight() : pictures.get(0).getSecretHeight();
 		int width = k == 8 ? pictures.get(0).getWidth() : pictures.get(0).getSecretWidth();
-		int secretDataSize = width * height;
-		secretPicture = new byte[secretDataSize];
+		int secretPictureSize = width * height;
+		secretPicture = new byte[secretPictureSize];
 		int j = 0;
 
-		while(byteCount < secretDataSize){
+		while(byteCount < secretPictureSize){
 //		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
 			points = getPoints(j);
 
@@ -86,8 +86,6 @@ public class Recoverer implements Worker {
 		BmpWriter bmpWriter = new BmpWriter.BmpWriterBuilder()
 				.compressionType(pictures.get(0).getCompressionType()).file(new File(secretFilePath))
 				.height(height).width(width)
-//				.numImportantColors(pictures.get(0).getNumImportantColors())
-//				.numUsedColors(pictures.get(0).getNumUsedColors())
 				.pictureData(secretPicture).reservedBytes(pictures.get(0).getReservedBytes())
 				.build();
 		try {
@@ -109,6 +107,9 @@ public class Recoverer implements Worker {
 		byte[] picData = bmp.getPictureData();
 		String byteStr = "";
 		for(int i = 0; i < 8; i++){
+			if(8*j + i >= picData.length) {
+				System.out.println(32);
+			}
 			byteStr += ((int)picData[8*j + i] & 1);
 		}
 		return Integer.parseInt(byteStr, 2);

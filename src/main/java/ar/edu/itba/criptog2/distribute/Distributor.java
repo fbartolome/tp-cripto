@@ -33,7 +33,7 @@ public class Distributor implements Worker {
 //            this.carrierBMPParsers.add(new BmpParser("img/Jamesssd.bmp"));
 //            this.carrierBMPParsers.add(new BmpParser("img/Marilynssd.bmp"));
 
-            this.secretBMPParser = new BmpParser("img/JamesMini.bmp");
+            this.secretBMPParser = new BmpParser("img/100-75.bmp");
         } catch (IOException e) {
             e.printStackTrace();
         }
