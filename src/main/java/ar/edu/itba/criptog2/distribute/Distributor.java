@@ -84,6 +84,14 @@ public class Distributor implements Worker {
 						System.err.println("Aborting.");
 						System.exit(1);
 					}
+				} else {
+					int secretPixelCount = distributor.secretPicture.getWidth() * distributor.secretPicture.getHeight();
+					int shadowPixelCount = shadow.getWidth() * shadow.getHeight();
+					if(secretPixelCount * (8.0/distributor.k) > shadowPixelCount) {
+						System.err.println("Shadow is not big enough to hide secret");
+						System.err.println("Aborting.");
+						System.exit(1);
+					}
 				}
 
 				distributor.shadows.add(shadow);
