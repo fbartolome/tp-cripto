@@ -132,9 +132,13 @@ public class Distributor implements Worker {
 		
 			// build polynomial
 			Polynomial p = new Polynomial(0, 0);
-			for (int i = 0; i < this.k; i++) {
-				p = p.plus(new Polynomial(randomPixels[consumedBytes++], i));
-			}
+            for (int i = 0; i < this.k; i++) {
+                int b = randomPixels[consumedBytes++];
+                if(b < 0){
+                    b += 256;
+                }
+                p = p.plus(new Polynomial(b, i));
+            }
 			
 			boolean done = false;
 			int [] evaluations;
