@@ -37,13 +37,13 @@ public class BmpParser {
         }
         file = new File(bitmapImagePath);
         if (!file.exists()) {
-            throw new IllegalArgumentException("Image does not exist");
+            throw new IllegalArgumentException(bitmapImagePath + " does not exist");
         }
         if (file.isDirectory()) {
-            throw new IllegalArgumentException("Provided path is a directory, not a file");
+            throw new IllegalArgumentException(bitmapImagePath + " is a directory, not a file");
         }
         if (!file.canRead()) {
-            throw new IllegalArgumentException("Image is not readable");
+            throw new IllegalArgumentException(bitmapImagePath + " is not readable");
         }
         parse();
     }
@@ -167,6 +167,10 @@ public class BmpParser {
 
     public byte[] getHeader() {
         return Arrays.copyOfRange(fileData, 0, pictureOffset);
+    }
+
+    public String getAbsolutePath() {
+        return file.getAbsolutePath();
     }
 
     @Override
