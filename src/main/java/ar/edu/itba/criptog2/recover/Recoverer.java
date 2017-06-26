@@ -24,7 +24,6 @@ public class Recoverer implements Worker {
 
 	private String secretFilePath;
 
-
 	private Recoverer() {}
 
 	public static Recoverer createFromNamespace(final Namespace ns) {
@@ -35,15 +34,17 @@ public class Recoverer implements Worker {
 
 		//load picture files from path
 		final File[] files = new File(ns.getString("dir")).listFiles();
-		for(File f : files){
+		for (int i = 0; i < recoverer.k; i++) {
 			try {
-				if(f.isFile() && f.getName().endsWith(".bmp"))
-					recoverer.pictures.add(new BmpParser(f.getPath()));
+				if(files[i].isFile() && files[i].getName().endsWith(".bmp")){
+					recoverer.pictures.add(new BmpParser(files[i].getPath()));
+				}else{
+					i--;
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-//		recoverer.secretPicture = new byte[recoverer.pictures.get(0).getPictureSize()];
 
 		return recoverer;
 	}
@@ -60,7 +61,7 @@ public class Recoverer implements Worker {
 		secretPicture = new byte[secretPictureSize];
 		int j = 0;
 
-		while(byteCount < secretPictureSize){
+		while(byteCount < secretPictureSize && (j+1)*k < secretPictureSize){
 //		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
 			points = getPoints(j);
 
@@ -107,9 +108,6 @@ public class Recoverer implements Worker {
 		byte[] picData = bmp.getPictureData();
 		String byteStr = "";
 		for(int i = 0; i < 8; i++){
-			if(8*j + i >= picData.length) {
-				System.out.println(32);
-			}
 			byteStr += ((int)picData[8*j + i] & 1);
 		}
 		return Integer.parseInt(byteStr, 2);

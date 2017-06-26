@@ -24,17 +24,17 @@ public class Distributor implements Worker {
         this.rnd = new Random(seed);
         this.carrierBMPParsers = new ArrayList<>();
         try {
-            this.carrierBMPParsers.add(new BmpParser("img/Albertssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Alfredssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Audreyssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Evassd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Facundossd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Gustavossd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Jamesssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/Marilynssd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Albertssd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Alfredssd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Audreyssd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Evassd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Facundossd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Gustavossd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Jamesssd.bmp"));
+            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Marilynssd.bmp"));
 
-            this.secretBMPParser = new BmpParser("img/Gustavossd.bmp");
-        } catch (IOException e) {
+            this.secretBMPParser = new BmpParser("img/100-75.bmp");
+		} catch (IOException e) {
             e.printStackTrace();
         }
 	}
@@ -163,11 +163,11 @@ public class Distributor implements Worker {
                 hideByte((byte)evaluations[i],j,pa);
 			}
 			j++;
-		} while (consumedBytes < numberOfPixels);
+		} while (consumedBytes < numberOfPixels && (j+1)*k < numberOfPixels);
 
         for (int i = 0; i < this.n; i++) {
             // write to file
-            BmpParser p = this.carrierBMPParsers.get(i);
+			BmpParser p = this.carrierBMPParsers.get(i);
             BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
                     .seed(this.seed).shadowNumber(i+1).file(new File("img/aaa/sombra" + (i+1) + ".bmp"))
                     .secretHeight(secretBMPParser.getHeight()).secretWidth(secretBMPParser.getWidth())
@@ -184,7 +184,7 @@ public class Distributor implements Worker {
 	private void hideByte(byte byteToHide, int j, BmpParser shadow){
 		String bits = Integer.toBinaryString(byteToHide & 255 | 256).substring(1);
         for(int i = 0; i < 8; i++){
-            byte oldByte = shadow.getPictureData()[8*j+i];
+			byte oldByte = shadow.getPictureData()[8*j+i];
             String oldByteStr = Integer.toBinaryString(oldByte & 255 | 256).substring(1);
             String newByteStr = oldByteStr.substring(0,7) + bits.charAt(i);
             byte newByte = (byte)Integer.parseInt(newByteStr, 2);
