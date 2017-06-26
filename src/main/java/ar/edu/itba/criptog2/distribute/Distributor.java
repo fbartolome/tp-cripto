@@ -32,22 +32,22 @@ public class Distributor implements Worker {
 		final Distributor distributor = new Distributor();
 		
 		distributor.k = ns.getInt("k");
-		distributor.n = ns.getInt("n");
+		Optional<Integer> optionalN = Optional.ofNullable(ns.getInt("n"));
+		distributor.n = optionalN.orElse(distributor.k);
+		boolean providedN = optionalN.isPresent();
 
-		if(distributor.n != -1) {
-			if (distributor.n <= 1) {
-				System.err.println("N should be greater than or equal to 2.");
-				System.err.println("Aborting.");
-				System.exit(1);
-			}
-			if (distributor.k > distributor.n) {
-				System.err.println("K should be less than or equal to N.");
-				System.err.println("Aborting.");
-				System.exit(1);
-			}
+		if (providedN && distributor.n <= 1) {
+			System.err.println("N should be greater than or equal to 2.");
+			System.err.println("Aborting.");
+			System.exit(1);
 		}
 		if (distributor.k <= 1) {
 			System.err.println("K should be greater than or equal to 2.");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+		if (providedN && distributor.k > distributor.n) {
+			System.err.println("K should be less than or equal to N.");
 			System.err.println("Aborting.");
 			System.exit(1);
 		}
@@ -77,7 +77,7 @@ public class Distributor implements Worker {
 					System.err.println("Aborting.");
 					System.exit(1);
 				}
-
+				//TODO ensure all shadows have the same dimensions
 				if (distributor.k == 8) {
 					if (shadow.getWidth() != distributor.secretPicture.getWidth() || shadow.getHeight() != distributor.secretPicture.getHeight()) {
 						System.err.println("For K = 8, all shadows should have the same dimensions as secret (" + distributor.secretPicture.getWidth() + "x" + distributor.secretPicture.getHeight() + "), " + shadowFiles[i].getName() + " is " + shadow.getWidth() + "x" + shadow.getHeight());
@@ -100,18 +100,18 @@ public class Distributor implements Worker {
 
 		int numAvailableShadows = distributor.shadows.size();
 		if(numAvailableShadows != distributor.n) {
-			if(distributor.n != -1)	{	//Supplied N
+			if(providedN)	{
 				System.err.println("Specified N=" + distributor.n + " but there are " + numAvailableShadows + " available shadows, need exactly " + distributor.n);
 				System.err.println("Aborting.");
 				System.exit(1);
 			} else {
-				// Didn't supply N, verify K there are at least K shadows
+				// Didn't provide N, verify that there are at least K shadows
 				if(distributor.k > numAvailableShadows) {
 					System.err.println("Specified K=" + distributor.k + " but there are " + numAvailableShadows+ " available shadows, need at least " + distributor.k);
 					System.err.println("Aborting.");
 					System.exit(1);
 				} else {
-					// All good, use N = number of available shadows (it is guaranteed K <= N)
+					// All good, use N = number of available shadows (K <= numAvailableShadows && N == numAvailableShadows ===> K <= N)
 					distributor.n = numAvailableShadows;
 				}
 			}
