@@ -1,44 +1,32 @@
 package ar.edu.itba.criptog2.distribute;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
 import ar.edu.itba.criptog2.Worker;
 import ar.edu.itba.criptog2.util.BmpParser;
 import ar.edu.itba.criptog2.util.BmpWriter;
 import ar.edu.itba.criptog2.util.Polynomial;
 import net.sourceforge.argparse4j.inf.Namespace;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+
 public class Distributor implements Worker {
-	
-	private final static String OUTPUT_PATH = "img/aaa/";
 	
 	private int k;
 	private int n;
-	private BmpParser secretBMPParser;
+	private BmpParser secretPicture;
 	private Random rnd;
-	private List<BmpParser> carrierBMPParsers;
+	private List<Integer> randomValues;
+	private List<BmpParser> shadows;
     private int seed;
 	
 	private Distributor() {
-        this.seed = new Random().nextInt(65536);
-        this.rnd = new Random(seed);
-        this.carrierBMPParsers = new ArrayList<>();
-        try {
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Albertssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Alfredssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Audreyssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Evassd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Facundossd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Gustavossd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Jamesssd.bmp"));
-            this.carrierBMPParsers.add(new BmpParser("img/sombrasOriginales/Marilynssd.bmp"));
-
-            this.secretBMPParser = new BmpParser("img/100-75.bmp");
-		} catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.seed = new Random().nextInt(65536);		//2-byte seed
+        this.rnd = new Random(seed);						//Random number generator using that seed
+        this.shadows = new ArrayList<>();
 	}
 	
 	public static Distributor createFromNamespace(final Namespace ns) throws Exception {
@@ -47,55 +35,63 @@ public class Distributor implements Worker {
 		distributor.k = ns.getInt("k");
 		Optional<Integer> optionalN = Optional.ofNullable(ns.getInt("n"));
 		distributor.n = optionalN.orElse(distributor.k);
-//
-//		if (distributor.k <= 1) {
-//			throw new IllegalArgumentException("k should be equal or greater than 2");
-//		}
-//
-//		if (distributor.k > distributor.n) {
-//			throw new IllegalArgumentException("k should be equal or smaller than n");
-//		}
-//
-//		distributor.secretBMPParser = new BmpParser(ns.getString("secret"));
-//
-//		if (distributor.secretBMPParser.getBitsPerPixel() != 8) {
-//			throw new IllegalArgumentException("bits per pixel should be 8. instead got " + distributor.secretBMPParser.getBitsPerPixel());
-//		}
-//
-//		final int numberOfPixels = distributor.secretBMPParser.getHeight() * distributor.secretBMPParser.getWidth();
-//
-//		distributor.randomValues = new ArrayList<>(numberOfPixels);
-//
-//		distributor.rnd = new Random(distributor.secretBMPParser.getSeed());
-//
-//		for (int i = 0; i < numberOfPixels; i++) {
-//			distributor.randomValues.add(i, distributor.rnd.nextInt(256));
-//		}
-//
-//		final Optional<String> carrierDirectory = Optional.of(ns.getString("dir"));
-//
-//		final File folder = new File(carrierDirectory.orElse("./"));
-//		File[] listOfFiles = folder.listFiles();
-//
-//		distributor.carrierBMPParsers = new ArrayList<>();
-//
-//		for (int i = 0; i < listOfFiles.length; i++) {
-//			if (listOfFiles[i].isFile() && listOfFiles[i].getName().endsWith(".bmp")) {
-//				final BmpParser carrierParser = new BmpParser(listOfFiles[i].getAbsolutePath());
-//				distributor.carrierBMPParsers.add(carrierParser);
-//
-//				if (carrierParser.getBitsPerPixel() != 8) {
-//					throw new IllegalArgumentException(listOfFiles[i].getName() + " should have 8 bits per pixel");
-//				}
-//
-//				if (distributor.k == 8) {
-//
-//					if (carrierParser.getWidth() != distributor.secretBMPParser.getWidth() || carrierParser.getHeight() != distributor.secretBMPParser.getHeight()) {
-//						throw new IllegalArgumentException(listOfFiles[i].getName() + " should be " + distributor.secretBMPParser.getWidth() + "x" + distributor.secretBMPParser.getHeight());
-//					}
-//				}
-//			}
-//		}
+
+		if (distributor.k <= 1) {
+			System.err.println("K should be equal or greater than 2.");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+		if (distributor.k > distributor.n) {
+			System.err.println("K should be less than or equal to than N.");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+
+		try {
+			distributor.secretPicture = new BmpParser(ns.getString("secret"));
+		} catch (Exception e) {
+			System.err.println("Error reading secret picture: " + e.getMessage());
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+
+		final int numberOfPixels = distributor.secretPicture.getHeight() * distributor.secretPicture.getWidth();
+
+		distributor.randomValues = new ArrayList<>(numberOfPixels);
+
+		for (int i = 0; i < numberOfPixels; i++) {
+			distributor.randomValues.add(i, distributor.rnd.nextInt(256));
+		}
+
+		final String shadowDirectory = ns.getString("dir");	// Should never be null
+		File[] shadowFiles = new File(shadowDirectory).listFiles();
+		if(shadowFiles == null) {
+			System.err.println(shadowDirectory + " is not a directory or it does not exist. Aborting.");
+			System.exit(1);
+		}
+
+		for (int i = 0; i < shadowFiles.length; i++) {
+			if (shadowFiles[i].isFile() && shadowFiles[i].getName().endsWith(".bmp")) {
+				BmpParser shadow = null;
+				try {
+					shadow = new BmpParser(shadowFiles[i].getAbsolutePath());
+				} catch (Exception e) {
+					System.err.println("Error reading shadow #" + (i+1) +": " + e.getMessage());
+					System.err.println("Aborting.");
+					System.exit(1);
+				}
+
+				if (distributor.k == 8) {
+					if (shadow.getWidth() != distributor.secretPicture.getWidth() || shadow.getHeight() != distributor.secretPicture.getHeight()) {
+						System.err.println("For K = 8, all shadows should have the same dimensions as secret (" + distributor.secretPicture.getWidth() + "x" + distributor.secretPicture.getHeight() + "), " + shadowFiles[i].getName() + " is " + shadow.getWidth() + "x" + shadow.getHeight());
+						System.err.println("Aborting.");
+						System.exit(1);
+					}
+				}
+
+				distributor.shadows.add(shadow);
+			}
+		}
 		
 		return distributor;
 	}
@@ -120,11 +116,11 @@ public class Distributor implements Worker {
 	
 	@Override
 	public void work() {
-		final int numberOfPixels = this.secretBMPParser.getWidth() * this.secretBMPParser.getHeight();
+		final int numberOfPixels = this.secretPicture.getWidth() * this.secretPicture.getHeight();
 		final byte[] pictureData = new byte[numberOfPixels];
 		
 		for (int i = 0; i < numberOfPixels; i++) {
-			pictureData[i] = (byte) (this.secretBMPParser.getPictureData()[i] ^ this.rnd.nextInt(256));
+			pictureData[i] = (byte) (this.secretPicture.getPictureData()[i] ^ this.rnd.nextInt(256));
 		}
 		
 		int j = 0;
@@ -161,7 +157,7 @@ public class Distributor implements Worker {
 			
 			// update data in file
 			for (int i = 0; i < this.n; i++) {
-				final BmpParser pa = this.carrierBMPParsers.get(i);
+				final BmpParser pa = this.shadows.get(i);
                 hideByte((byte)evaluations[i],j,pa);
 			}
 			j++;
@@ -169,15 +165,13 @@ public class Distributor implements Worker {
 
         for (int i = 0; i < this.n; i++) {
             // write to file
-        	final String outputPath = OUTPUT_PATH + (i+1) + ".bmp";
-			BmpParser p = this.carrierBMPParsers.get(i);
+			BmpParser p = this.shadows.get(i);
             BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
-                    .seed(this.seed).shadowNumber(i+1).file(new File(outputPath))
-                    .secretHeight(secretBMPParser.getHeight()).secretWidth(secretBMPParser.getWidth())
+                    .seed(this.seed).shadowNumber(i+1).file(new File("img/aaa/sombra" + (i+1) + ".bmp"))
+                    .secretHeight(secretPicture.getHeight()).secretWidth(secretPicture.getWidth())
                     .build();
             try {
                 writer.writeImage();
-                System.out.println("shadow " + ( i + 1 ) + " written to " + outputPath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
