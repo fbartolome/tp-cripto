@@ -81,9 +81,8 @@ public class Distributor implements Worker {
 				} else {
 					int secretPixelCount = distributor.secretPicture.getWidth() * distributor.secretPicture.getHeight();
 					int shadowPixelCount = shadow.getWidth() * shadow.getHeight();
-					int minPixelCount = secretPixelCount*8/distributor.k;
-					if(shadowPixelCount < minPixelCount) {
-						System.err.println("All shadows should have at least " + minPixelCount + " pixels, " + shadowFiles[i].getName() + " has " + shadowPixelCount);
+					if(secretPixelCount * (8/distributor.k) < shadowPixelCount) {
+						System.err.println("Incompatible secret/shadow dimensions.");
 						System.err.println("Aborting.");
 						System.exit(1);
 					}
