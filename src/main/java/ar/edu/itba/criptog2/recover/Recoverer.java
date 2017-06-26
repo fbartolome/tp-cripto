@@ -167,7 +167,7 @@ public class Recoverer implements Worker {
 		byte[] picData = bmp.getPictureData();
 		StringBuilder byteStr = new StringBuilder();
 		for(int i = 0; i < 8; i++) {
-			byteStr.append((int) picData[8 * j + i] & 1);
+            byteStr.append(picData[8 * j + i] & 1);
 		}
 		return Integer.parseInt(byteStr.toString(), 2);
 	}
