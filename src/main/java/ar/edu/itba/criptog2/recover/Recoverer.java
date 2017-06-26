@@ -98,7 +98,9 @@ public class Recoverer implements Worker {
 		try {
 			bmpWriter.writeImage();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Error writing revealed secret: " + e.getMessage());
+			System.err.println("Aborting.");
+			System.exit(1);
 		}
 	}
 
