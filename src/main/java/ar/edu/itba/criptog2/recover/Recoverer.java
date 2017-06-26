@@ -34,6 +34,10 @@ public class Recoverer implements Worker {
 
 		//load picture files from path
 		final File[] files = new File(ns.getString("dir")).listFiles();
+		if(files == null) {
+			System.err.println(ns.getString("dir") + " is not a directory or it does not exist. Aborting.");
+			System.exit(1);
+		}
 		for (int i = 0; i < recoverer.k; i++) {
 			try {
 				if(files[i].isFile() && files[i].getName().endsWith(".bmp")){
@@ -42,10 +46,11 @@ public class Recoverer implements Worker {
 					i--;
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.err.println("Error opening shadows: " + e.getMessage());
+				System.err.println("Aborting.");
+				System.exit(1);
 			}
 		}
-
 		return recoverer;
 	}
 	
@@ -61,16 +66,16 @@ public class Recoverer implements Worker {
 		secretPicture = new byte[secretPictureSize];
 		int j = 0;
 
-		while(byteCount < secretPictureSize && (j+1)*k < secretPictureSize){
-//		paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
+		while(byteCount < secretPictureSize && (j+1)*k < secretPictureSize) {
+			//Paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
 			points = getPoints(j);
 
-//		paso 2: encuentro el polinomio
+			//Paso 2: encuentro el polinomio
 			Polynomial polynomial = lagrangeInterpolator.interpolate(points,257);
 			coeffs = polynomial.getCoefficients();
 
-//		paso 3: armo el pedacito de imagen del secreto
-// 		Hay algunos polinomios que quedan con sus coeficientes de mayor grado en 0. Escribir estos 0s.
+			//Paso 3: armo el pedacito de imagen del secreto
+			//Hay algunos polinomios que quedan con sus coeficientes de mayor grado en 0. Escribir estos 0s.
             for (int i = coeffs.length; i < k ; i++) {
                 secretPicture[byteCount++] = 0;
             }
@@ -80,14 +85,15 @@ public class Recoverer implements Worker {
 			j++;
 		}
 
-//		paso 5: reordeno los bytes de la imagen secreto
-		randomizeTable(pictures.get(0).getSeed());
+		//Paso 5: reordeno los bytes de la imagen secreto
+		revealSecret(pictures.get(0).getSeed());
 
-//		recover secret
+		//Escribir foto descubierta
 		BmpWriter bmpWriter = new BmpWriter.BmpWriterBuilder()
-				.compressionType(pictures.get(0).getCompressionType()).file(new File(secretFilePath))
-				.height(height).width(width)
-				.pictureData(secretPicture).reservedBytes(pictures.get(0).getReservedBytes())
+				.file(new File(secretFilePath))
+				.width(width)
+				.height(height)
+				.pictureData(secretPicture)
 				.build();
 		try {
 			bmpWriter.writeImage();
@@ -96,26 +102,48 @@ public class Recoverer implements Worker {
 		}
 	}
 
+	/**
+	 * Gets an (x, y) point where the secret's polynomial was evaluated, for each shadow. X corresponds to the shadow
+	 * number, and Y is distributed along each section of each shadow.
+	 *
+	 * @param j The section number to get points for.  Will scan the same section of each shadow.
+	 * @return The extracted points.
+	 */
 	private List<Point> getPoints(int j){
 		List<Point> points = new ArrayList<>();
-		for(BmpParser bmp : pictures){
-			points.add(new Point(bmp.getShadowNumber(),getHiddenByte(bmp,j)));
+		for(BmpParser bmp : pictures) {
+			points.add(new Point(bmp.getShadowNumber(), getHiddenByte(bmp, j)));
 		}
 		return points;
 	}
 
+	/**
+	 * Cycles through 8 bytes of a specified section of a shadow picture and extracts the least significant bit of each
+	 * byte, concatenating them together to obtain a new full byte.
+	 *
+	 * @param bmp The shadow to traverse.
+	 * @param j The section of the shadow to traverse. Each section is 8 bytes long.
+	 * @return The obtained byte, as an int.
+	 */
 	private int getHiddenByte(BmpParser bmp, int j) {
 		byte[] picData = bmp.getPictureData();
-		String byteStr = "";
-		for(int i = 0; i < 8; i++){
-			byteStr += ((int)picData[8*j + i] & 1);
+		StringBuilder byteStr = new StringBuilder();
+		for(int i = 0; i < 8; i++) {
+			byteStr.append((int) picData[8 * j + i] & 1);
 		}
-		return Integer.parseInt(byteStr, 2);
+		return Integer.parseInt(byteStr.toString(), 2);
 	}
 
-	private void randomizeTable(final int seed){
+	/**
+	 * XORs each byte of the secret picture with a "random" byte from a SEEDED random generator. If the random's seed
+	 * is the same used to hide the picture, the XORs applied here will be the same as the ones used to hide the picture,
+	 * and thus the secret will be "revealed".
+	 *
+	 * @param seed The seed to use for the random number generator. Should be the same seed used to hide the picture.
+	 */
+	private void revealSecret(final int seed) {
 		Random rnd = new Random(seed);
-		for(int i=0; i < secretPicture.length; i++){
+		for(int i = 0; i < secretPicture.length; i++) {
 			secretPicture[i] = (byte) ((int)secretPicture[i] ^ rnd.nextInt(256));
 		}
 	}
