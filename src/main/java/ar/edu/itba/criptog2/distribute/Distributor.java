@@ -24,11 +24,12 @@ public class Distributor implements Worker {
 	
 	private Distributor() {
         this.seed = new Random().nextInt(65536);		//2-byte seed
-        this.rnd = new Random(seed);						//Random number generator using that seed
+        this.rnd = new Random(seed);					//Random number generator using that seed
         this.shadows = new ArrayList<>();
 	}
 	
 	public static Distributor createFromNamespace(final Namespace ns) throws Exception {
+
 		final Distributor distributor = new Distributor();
 		
 		distributor.k = ns.getInt("k");
@@ -36,21 +37,7 @@ public class Distributor implements Worker {
 		distributor.n = optionalN.orElse(distributor.k);
 		boolean providedN = optionalN.isPresent();
 
-		if (providedN && distributor.n <= 1) {
-			System.err.println("N should be greater than or equal to 2.");
-			System.err.println("Aborting.");
-			System.exit(1);
-		}
-		if (distributor.k <= 1) {
-			System.err.println("K should be greater than or equal to 2.");
-			System.err.println("Aborting.");
-			System.exit(1);
-		}
-		if (providedN && distributor.k > distributor.n) {
-			System.err.println("K should be less than or equal to N.");
-			System.err.println("Aborting.");
-			System.exit(1);
-		}
+		distributor.verifyCorrectKAndCorrectN(providedN);
 
 		try {
 			distributor.secretPicture = new BmpParser(ns.getString("secret"));
@@ -61,12 +48,46 @@ public class Distributor implements Worker {
 		}
 
 		final String shadowDirectory = ns.getString("dir");	// Should never be null
+		distributor.loadShadowFiles(shadowDirectory);
+
+		distributor.verifyCorrectAmountOfShadows(providedN);
+
+		return distributor;
+	}
+
+	/**
+	 * Verify that n if larger than one, that k is larger than 1, and that k is smaller than n
+	 * @param providedN
+	 */
+	private void verifyCorrectKAndCorrectN(boolean providedN){
+		if (providedN && this.n <= 1) {
+			System.err.println("N should be greater than or equal to 2.");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+		if (this.k <= 1) {
+			System.err.println("K should be greater than or equal to 2.");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+		if (providedN && this.k > this.n) {
+			System.err.println("K should be less than or equal to N.");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+	}
+
+	/**
+	 * Load shadow files to shadows list
+	 * @param shadowDirectory from where the shadow files will be loaded
+	 */
+	private void loadShadowFiles(String shadowDirectory){
+
 		File[] shadowFiles = new File(shadowDirectory).listFiles();
 		if(shadowFiles == null) {
 			System.err.println(shadowDirectory + " is not a directory or it does not exist. Aborting.");
 			System.exit(1);
 		}
-
 		int shadowWidth = 0, shadowHeight = 0;
 		for (int i = 0; i < shadowFiles.length; i++) {
 			if (shadowFiles[i].isFile() && shadowFiles[i].getName().endsWith(".bmp")) {
@@ -93,46 +114,50 @@ public class Distributor implements Worker {
 				}
 
 				//2) All shadows should have a particular size depending on K
-				if (distributor.k == 8) {
-					if (shadow.getWidth() != distributor.secretPicture.getWidth() || shadow.getHeight() != distributor.secretPicture.getHeight()) {
-						System.err.println("For K = 8, all shadows should have the same dimensions as secret (" + distributor.secretPicture.getWidth() + "x" + distributor.secretPicture.getHeight() + "), " + shadowFiles[i].getName() + " is " + shadow.getWidth() + "x" + shadow.getHeight());
+				if (this.k == 8) {
+					if (shadow.getWidth() != this.secretPicture.getWidth() || shadow.getHeight() != this.secretPicture.getHeight()) {
+						System.err.println("For K = 8, all shadows should have the same dimensions as secret (" + this.secretPicture.getWidth() + "x" + this.secretPicture.getHeight() + "), " + shadowFiles[i].getName() + " is " + shadow.getWidth() + "x" + shadow.getHeight());
 						System.err.println("Aborting.");
 						System.exit(1);
 					}
 				} else {
-					int secretPixelCount = distributor.secretPicture.getWidth() * distributor.secretPicture.getHeight();
+					int secretPixelCount = this.secretPicture.getWidth() * this.secretPicture.getHeight();
 					int shadowPixelCount = shadow.getWidth() * shadow.getHeight();
-					if(secretPixelCount * (8.0/distributor.k) > shadowPixelCount) {
+					if(secretPixelCount * (8.0/this.k) > shadowPixelCount) {
 						System.err.println("Shadow is not big enough to hide secret");
 						System.err.println("Aborting.");
 						System.exit(1);
 					}
 				}
 
-				distributor.shadows.add(shadow);
+				this.shadows.add(shadow);
 			}
 		}
+	}
 
-		int numAvailableShadows = distributor.shadows.size();
-		if(numAvailableShadows != distributor.n) {
+	/**
+	 * Verify that the amount of shadows specified by parameter coincides with the ones in the chosen directory
+	 * @param providedN
+	 */
+	private void verifyCorrectAmountOfShadows(boolean providedN){
+		int numAvailableShadows = this.shadows.size();
+		if(numAvailableShadows != this.n) {
 			if(providedN)	{
-				System.err.println("Specified N=" + distributor.n + " but there are " + numAvailableShadows + " available shadows, need exactly " + distributor.n);
+				System.err.println("Specified N=" + this.n + " but there are " + numAvailableShadows + " available shadows, need exactly " + this.n);
 				System.err.println("Aborting.");
 				System.exit(1);
 			} else {
 				// Didn't provide N, verify that there are at least K shadows
-				if(distributor.k > numAvailableShadows) {
-					System.err.println("Specified K=" + distributor.k + " but there are " + numAvailableShadows+ " available shadows, need at least " + distributor.k);
+				if(this.k > numAvailableShadows) {
+					System.err.println("Specified K=" + this.k + " but there are " + numAvailableShadows+ " available shadows, need at least " + this.k);
 					System.err.println("Aborting.");
 					System.exit(1);
 				} else {
 					// All good, use N = number of available shadows (K <= numAvailableShadows && N == numAvailableShadows ===> K <= N)
-					distributor.n = numAvailableShadows;
+					this.n = numAvailableShadows;
 				}
 			}
 		}
-
-		return distributor;
 	}
 
 	/**
