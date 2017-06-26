@@ -12,6 +12,8 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 public class Distributor implements Worker {
 	
+	private final static String OUTPUT_PATH = "img/aaa/";
+	
 	private int k;
 	private int n;
 	private BmpParser secretBMPParser;
@@ -167,13 +169,15 @@ public class Distributor implements Worker {
 
         for (int i = 0; i < this.n; i++) {
             // write to file
+        	final String outputPath = OUTPUT_PATH + (i+1) + ".bmp";
 			BmpParser p = this.carrierBMPParsers.get(i);
             BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
-                    .seed(this.seed).shadowNumber(i+1).file(new File("img/aaa/sombra" + (i+1) + ".bmp"))
+                    .seed(this.seed).shadowNumber(i+1).file(new File(outputPath))
                     .secretHeight(secretBMPParser.getHeight()).secretWidth(secretBMPParser.getWidth())
                     .build();
             try {
                 writer.writeImage();
+                System.out.println("shadow " + ( i + 1 ) + " written to " + outputPath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
