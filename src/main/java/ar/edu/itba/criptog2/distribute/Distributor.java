@@ -142,7 +142,7 @@ public class Distributor implements Worker {
 				evaluations = makeEvaluations(p);
 				
 				if (shouldReevaluate(evaluations)) {
-					for (int i = 0; i < this.k; i++) {
+					for (int i = 0; i < p.getCoefficients().length; i++) {
 						int coef = p.getCoefficientAt(i);
 						if (coef != 0) {
 							p.alterCoefficientAt(i, coef - 1);
@@ -167,8 +167,11 @@ public class Distributor implements Worker {
             // write to file
 			BmpParser p = this.shadows.get(i);
             BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
-                    .seed(this.seed).shadowNumber(i+1).file(new File("img/aaa/sombra" + (i+1) + ".bmp"))
-                    .secretHeight(secretPicture.getHeight()).secretWidth(secretPicture.getWidth())
+					.file(new File(p.getAbsolutePath()))		//Overwrite shadow header data
+                    .seed(this.seed)
+					.shadowNumber(i+1)
+                    .secretHeight(secretPicture.getHeight())
+					.secretWidth(secretPicture.getWidth())
                     .build();
             try {
                 writer.writeImage();
