@@ -127,3 +127,6 @@ fabric.properties
 .classpath
 
 target/
+img/
+*.pdf
+*.txt
