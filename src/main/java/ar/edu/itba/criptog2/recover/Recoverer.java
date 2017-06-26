@@ -29,7 +29,13 @@ public class Recoverer implements Worker {
 	public static Recoverer createFromNamespace(final Namespace ns) {
 
 		final Recoverer recoverer = new Recoverer();
+
 		recoverer.k = ns.getInt("k");
+		if(recoverer.k <= 1){
+			System.err.println("K should be greater than or equal to 2.");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
 		recoverer.secretFilePath = ns.getString("secret");
 
 		//load picture files from path
@@ -38,10 +44,24 @@ public class Recoverer implements Worker {
 			System.err.println(ns.getString("dir") + " is not a directory or it does not exist. Aborting.");
 			System.exit(1);
 		}
+		if(files.length < recoverer.k){
+			System.err.println("There should be at least K files in the given directory");
+			System.err.println("Aborting.");
+			System.exit(1);
+		}
+		int shadowSize = 0;
 		for (int i = 0; i < recoverer.k; i++) {
 			try {
 				if(files[i].isFile() && files[i].getName().endsWith(".bmp")){
-					recoverer.pictures.add(new BmpParser(files[i].getPath()));
+					BmpParser bmpParser = new BmpParser(files[i].getPath());
+					recoverer.pictures.add(bmpParser);
+					if(shadowSize == 0){
+						shadowSize = bmpParser.getWidth() * bmpParser.getHeight();
+					}else if(shadowSize != files[i].getTotalSpace()){
+						System.err.println("All shadow images should have the same size");
+						System.err.println("Aborting.");
+						System.exit(1);
+					}
 				}else{
 					i--;
 				}
@@ -67,15 +87,15 @@ public class Recoverer implements Worker {
 		int j = 0;
 
 		while(byteCount < secretPictureSize && (j+1)*k < secretPictureSize) {
-			//Paso 1: agarro los primeros 8 bytes de cada foto y consigo un byte por cada una de esas fotos
+			//Step 1: Get the first eight bytes of each picture
 			points = getPoints(j);
 
-			//Paso 2: encuentro el polinomio
+			//Step 2: Find polynomial
 			Polynomial polynomial = lagrangeInterpolator.interpolate(points,257);
 			coeffs = polynomial.getCoefficients();
 
-			//Paso 3: armo el pedacito de imagen del secreto
-			//Hay algunos polinomios que quedan con sus coeficientes de mayor grado en 0. Escribir estos 0s.
+			//Step 3: Build piece of secret picture
+			//When the coefficient of the largest degree of the polynomial is 0, it is written.
             for (int i = coeffs.length; i < k ; i++) {
                 secretPicture[byteCount++] = 0;
             }
@@ -85,10 +105,10 @@ public class Recoverer implements Worker {
 			j++;
 		}
 
-		//Paso 5: reordeno los bytes de la imagen secreto
+		//Step 5: Reorder image
 		revealSecret(pictures.get(0).getSeed());
 
-		//Escribir foto descubierta
+		//Write secret picture
 		BmpWriter bmpWriter = new BmpWriter.BmpWriterBuilder()
 				.file(new File(secretFilePath))
 				.width(width)
