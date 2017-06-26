@@ -67,6 +67,7 @@ public class Distributor implements Worker {
 			System.exit(1);
 		}
 
+		int shadowWidth = 0, shadowHeight = 0;
 		for (int i = 0; i < shadowFiles.length; i++) {
 			if (shadowFiles[i].isFile() && shadowFiles[i].getName().endsWith(".bmp")) {
 				BmpParser shadow = null;
@@ -77,7 +78,21 @@ public class Distributor implements Worker {
 					System.err.println("Aborting.");
 					System.exit(1);
 				}
-				//TODO ensure all shadows have the same dimensions
+
+				//Validate shadow dimensions
+				//1) All shadows should have the same dimensions. Store the dimensions of the first encountered shadow and ensure all others have the same dimensions.
+				if(i == 0) {
+					shadowWidth = shadow.getWidth();
+					shadowHeight = shadow.getHeight();
+				} else {
+					if(shadow.getWidth() != shadowWidth || shadow.getHeight() != shadowHeight) {
+						System.err.println("All shadows should have the same dimensions.");
+						System.err.println("Aborting.");
+						System.exit(1);
+					}
+				}
+
+				//2) All shadows should have a particular size depending on K
 				if (distributor.k == 8) {
 					if (shadow.getWidth() != distributor.secretPicture.getWidth() || shadow.getHeight() != distributor.secretPicture.getHeight()) {
 						System.err.println("For K = 8, all shadows should have the same dimensions as secret (" + distributor.secretPicture.getWidth() + "x" + distributor.secretPicture.getHeight() + "), " + shadowFiles[i].getName() + " is " + shadow.getWidth() + "x" + shadow.getHeight());
