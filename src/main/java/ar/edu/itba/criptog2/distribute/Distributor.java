@@ -243,25 +243,38 @@ public class Distributor implements Worker {
 			j++;
 		} while (consumedBytes < numberOfPixels && (j+1)*k < numberOfPixels);
 
-        for (int i = 0; i < this.n; i++) {
-            // write to file
-			BmpParser p = this.shadows.get(i);
-            BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
-					.file(new File(p.getAbsolutePath()))		//Overwrite shadow header data
-                    .seed(this.seed)
-					.shadowNumber(i+1)
-                    .secretHeight(secretPicture.getHeight())
-					.secretWidth(secretPicture.getWidth())
-                    .build();
-            try {
-                writer.writeImage();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-		
+		writeCreatedShadows();
+
 	}
 
+	/**
+	 * Writes files of n shadows that were created
+	 */
+	private void writeCreatedShadows(){
+		for (int i = 0; i < this.n; i++) {
+			// write to file
+			BmpParser p = this.shadows.get(i);
+			BmpWriter writer = new BmpWriter.BmpWriterBuilder(p)
+					.file(new File(p.getAbsolutePath()))		//Overwrite shadow header data
+					.seed(this.seed)
+					.shadowNumber(i+1)
+					.secretHeight(secretPicture.getHeight())
+					.secretWidth(secretPicture.getWidth())
+					.build();
+			try {
+				writer.writeImage();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Hides one byte of the secret into eight bytes of the shadow
+	 * @param byteToHide
+	 * @param j
+	 * @param shadow
+	 */
 	private void hideByte(byte byteToHide, int j, BmpParser shadow){
 		String bits = Integer.toBinaryString(byteToHide & 255 | 256).substring(1);
         for(int i = 0; i < 8; i++) {
