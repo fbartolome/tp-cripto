@@ -80,7 +80,6 @@ public class BmpParser {
             if(compressionType != 0) {
                 throw new IllegalStateException("Provided BMP file doesn't specify picture length and is not uncompressed");
             } else {
-                //TODO this assumes that bitsPerPixel is always a multiple of 8. What if this isn't the case (e.g. malformed BMP)?
                 pictureSize = width * height * (bitsPerPixel/8);
             }
         }
