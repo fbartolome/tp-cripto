@@ -78,10 +78,25 @@ public class Distributor implements Worker {
 						System.err.println("Aborting.");
 						System.exit(1);
 					}
+				} else {
+					int secretPixelCount = distributor.secretPicture.getWidth() * distributor.secretPicture.getHeight();
+					int shadowPixelCount = shadow.getWidth() * shadow.getHeight();
+					int minPixelCount = secretPixelCount*8/distributor.k;
+					if(shadowPixelCount < minPixelCount) {
+						System.err.println("All shadows should have at least " + minPixelCount + " pixels, " + shadowFiles[i].getName() + " has " + shadowPixelCount);
+						System.err.println("Aborting.");
+						System.exit(1);
+					}
 				}
 
 				distributor.shadows.add(shadow);
 			}
+		}
+
+		if(distributor.shadows.size() < distributor.k) {
+			System.err.println("Need " + distributor.k + " suitable shadows, found only " + distributor.shadows.size() + ".");
+			System.err.println("Aborting.");
+			System.exit(1);
 		}
 		
 		return distributor;
