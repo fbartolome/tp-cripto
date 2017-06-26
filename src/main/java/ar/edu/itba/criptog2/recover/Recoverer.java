@@ -57,28 +57,40 @@ public class Recoverer implements Worker {
 	 * Used in builder to load shadow files to pictures
 	 * @param files
 	 */
-	private void loadShadows(File[] files){
-		int shadowSize = 0;
-		for (int i = 0; i < this.k; i++) {
-			try {
-				if(files[i].isFile() && files[i].getName().endsWith(".bmp")){
-					BmpParser bmpParser = new BmpParser(files[i].getPath());
-					this.pictures.add(bmpParser);
-					if(shadowSize == 0){
-						shadowSize = bmpParser.getWidth() * bmpParser.getHeight();
-					}else if(shadowSize != bmpParser.getWidth() * bmpParser.getHeight()){
-						System.err.println("All shadow images should have the same size");
+	private void loadShadows(File[] files) {
+		int shadowWidth = 0, shadowHeight = 0;
+		for (File file : files) {
+			if(file.isFile() && file.getName().endsWith(".bmp")) {
+				BmpParser shadow = null;
+				try {
+					shadow = new BmpParser(file.getPath());
+				} catch (Exception e) {
+					System.err.println("Error opening shadows: " + e.getMessage());
+					System.err.println("Aborting.");
+					System.exit(1);
+				}
+				if (shadowWidth == 0 && shadowHeight == 0) {
+					shadowWidth = shadow.getWidth();
+					shadowHeight = shadow.getHeight();
+				} else {
+					if (shadow.getWidth() != shadowWidth || shadow.getHeight() != shadowHeight) {
+						System.err.println("All shadow images should have the same size.");
 						System.err.println("Aborting.");
 						System.exit(1);
 					}
-				}else{
-					i--;
 				}
-			} catch (IOException e) {
-				System.err.println("Error opening shadows: " + e.getMessage());
-				System.err.println("Aborting.");
-				System.exit(1);
+				this.pictures.add(shadow);
+				if(this.pictures.size() == k) {
+				    return;
+                }
 			}
+		}
+
+		//Make sure we found at least K suitable shadows
+		if(pictures.size() < k) {
+			System.err.println("Couldn't load at least " + k + " shadow pictures.");
+			System.err.println("Aborting.");
+			System.exit(1);
 		}
 	}
 
