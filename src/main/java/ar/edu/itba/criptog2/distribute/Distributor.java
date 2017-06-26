@@ -19,7 +19,6 @@ public class Distributor implements Worker {
 	private int n;
 	private BmpParser secretPicture;
 	private Random rnd;
-	private List<Integer> randomValues;
 	private List<BmpParser> shadows;
     private int seed;
 	
@@ -55,14 +54,6 @@ public class Distributor implements Worker {
 			System.exit(1);
 		}
 
-		final int numberOfPixels = distributor.secretPicture.getHeight() * distributor.secretPicture.getWidth();
-
-		distributor.randomValues = new ArrayList<>(numberOfPixels);
-
-		for (int i = 0; i < numberOfPixels; i++) {
-			distributor.randomValues.add(i, distributor.rnd.nextInt(256));
-		}
-
 		final String shadowDirectory = ns.getString("dir");	// Should never be null
 		File[] shadowFiles = new File(shadowDirectory).listFiles();
 		if(shadowFiles == null) {
@@ -95,7 +86,13 @@ public class Distributor implements Worker {
 		
 		return distributor;
 	}
-	
+
+	/**
+	 * Evaluates the given polynomial in 1, 2, 3, ..., {@link #n} modulo 257.
+	 *
+	 * @param p The polynomial to evaluate.
+	 * @return The evaluations, where the first element is the evaluation in 1.
+	 */
 	private int[] makeEvaluations(final Polynomial p) {
 		int[] evaluations = new int[this.n];
 		
@@ -104,10 +101,16 @@ public class Distributor implements Worker {
 		}
 		return evaluations;
 	}
-	
+
+	/**
+	 * Checks whether any of the given values is 256. If so, we should re-evaluate the polynomial that generated these values.
+	 *
+	 * @param evaluations A polynomial's evaluations.
+	 * @return Whether the polynomial that created these values should be re-evaluated.
+	 */
 	private boolean shouldReevaluate(final int[] evaluations) {
-		for (int i = 0; i < evaluations.length; i++) {
-			if (evaluations[i] == 256) {
+		for (int evaluation : evaluations) {
+			if (evaluation == 256) {
 				return true;
 			}
 		}
@@ -117,10 +120,9 @@ public class Distributor implements Worker {
 	@Override
 	public void work() {
 		final int numberOfPixels = this.secretPicture.getWidth() * this.secretPicture.getHeight();
-		final byte[] pictureData = new byte[numberOfPixels];
-		
+		final byte[] randomPixels = new byte[numberOfPixels];
 		for (int i = 0; i < numberOfPixels; i++) {
-			pictureData[i] = (byte) (this.secretPicture.getPictureData()[i] ^ this.rnd.nextInt(256));
+			randomPixels[i] = (byte) (this.secretPicture.getPictureData()[i] ^ this.rnd.nextInt(256));
 		}
 		
 		int j = 0;
@@ -131,7 +133,7 @@ public class Distributor implements Worker {
 			// build polynomial
 			Polynomial p = new Polynomial(0, 0);
 			for (int i = 0; i < this.k; i++) {
-				p = p.plus(new Polynomial(pictureData[consumedBytes++], i)); //FIXME: pictureData[j + i] ?
+				p = p.plus(new Polynomial(randomPixels[consumedBytes++], i));
 			}
 			
 			boolean done = false;
@@ -143,6 +145,7 @@ public class Distributor implements Worker {
 				
 				if (shouldReevaluate(evaluations)) {
 					for (int i = 0; i < p.getCoefficients().length; i++) {
+						// Find the first non-zero coefficient and subtract 1 to it
 						int coef = p.getCoefficientAt(i);
 						if (coef != 0) {
 							p.alterCoefficientAt(i, coef - 1);
@@ -158,7 +161,7 @@ public class Distributor implements Worker {
 			// update data in file
 			for (int i = 0; i < this.n; i++) {
 				final BmpParser pa = this.shadows.get(i);
-                hideByte((byte)evaluations[i],j,pa);
+                hideByte((byte)evaluations[i], j, pa);
 			}
 			j++;
 		} while (consumedBytes < numberOfPixels && (j+1)*k < numberOfPixels);
@@ -184,7 +187,7 @@ public class Distributor implements Worker {
 
 	private void hideByte(byte byteToHide, int j, BmpParser shadow){
 		String bits = Integer.toBinaryString(byteToHide & 255 | 256).substring(1);
-        for(int i = 0; i < 8; i++){
+        for(int i = 0; i < 8; i++) {
 			byte oldByte = shadow.getPictureData()[8*j+i];
             String oldByteStr = Integer.toBinaryString(oldByte & 255 | 256).substring(1);
             String newByteStr = oldByteStr.substring(0,7) + bits.charAt(i);
