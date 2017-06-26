@@ -30,7 +30,7 @@ public class Main {
 
 		//Optional Arguments
 		parser.addArgument("-n").dest("n").required(false).type(Integer.class).help("Only allowed when used with -d. Total number of shadows to generate. If not provided, will make n the number of pictures in the specified directory.");
-		parser.addArgument("-dir").dest("dir").required(false).type(String.class).setDefault("./").help("If used with -d, directory containing images where secret will be distributed. If used with -r, directory containing images from which to recover the secret. In either case, default is current directory.");
+		parser.addArgument("-dir").dest("dir").required(false).type(String.class).setDefault(".").help("If used with -d, directory containing images where secret will be distributed. If used with -r, directory containing images from which to recover the secret. In either case, default is current directory.");
 
 		Namespace ns = null;
 		try {
