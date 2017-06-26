@@ -49,15 +49,24 @@ public class Recoverer implements Worker {
 			System.err.println("Aborting.");
 			System.exit(1);
 		}
+		recoverer.loadShadows(files);
+		return recoverer;
+	}
+
+	/**
+	 * Used in builder to load shadow files to pictures
+	 * @param files
+	 */
+	private void loadShadows(File[] files){
 		int shadowSize = 0;
-		for (int i = 0; i < recoverer.k; i++) {
+		for (int i = 0; i < this.k; i++) {
 			try {
 				if(files[i].isFile() && files[i].getName().endsWith(".bmp")){
 					BmpParser bmpParser = new BmpParser(files[i].getPath());
-					recoverer.pictures.add(bmpParser);
+					this.pictures.add(bmpParser);
 					if(shadowSize == 0){
 						shadowSize = bmpParser.getWidth() * bmpParser.getHeight();
-					}else if(shadowSize != files[i].getTotalSpace()){
+					}else if(shadowSize != bmpParser.getWidth() * bmpParser.getHeight()){
 						System.err.println("All shadow images should have the same size");
 						System.err.println("Aborting.");
 						System.exit(1);
@@ -71,8 +80,8 @@ public class Recoverer implements Worker {
 				System.exit(1);
 			}
 		}
-		return recoverer;
 	}
+
 	
 	@Override
 	public void work() {
@@ -109,12 +118,7 @@ public class Recoverer implements Worker {
 		revealSecret(pictures.get(0).getSeed());
 
 		//Write secret picture
-		BmpWriter bmpWriter = new BmpWriter.BmpWriterBuilder()
-				.file(new File(secretFilePath))
-				.width(width)
-				.height(height)
-				.pictureData(secretPicture)
-				.build();
+		BmpWriter bmpWriter = getBmpWriter(height, width);
 		try {
 			bmpWriter.writeImage();
 		} catch (IOException e) {
@@ -168,5 +172,20 @@ public class Recoverer implements Worker {
 		for(int i = 0; i < secretPicture.length; i++) {
 			secretPicture[i] = (byte) ((int)secretPicture[i] ^ rnd.nextInt(256));
 		}
+	}
+
+	/**
+	 * Builds writer for secret picture
+	 * @param height
+	 * @param width
+	 * @return Bmp Writer
+	 */
+	private BmpWriter getBmpWriter(int height, int width){
+		return new BmpWriter.BmpWriterBuilder()
+				.file(new File(secretFilePath))
+				.width(width)
+				.height(height)
+				.pictureData(secretPicture)
+				.build();
 	}
 }
