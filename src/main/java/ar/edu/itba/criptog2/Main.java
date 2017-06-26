@@ -16,10 +16,9 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 
 		// https://argparse4j.github.io/usage.html
-		final ArgumentParser parser = ArgumentParsers.newArgumentParser("visualSSS")
-                .defaultHelp(true)
-                .description("Place a description here.")
-                .usage("${prog} -d|-k -secret [FILE] -k [NUMBER] [-n [NUMBER] -dir [DIRECTORY]]");
+		final ArgumentParser parser = ArgumentParsers.newArgumentParser("VisualSSS")
+                .description("Distribute secret pictures among other pictures, and recover secret pictures from other pictures.")
+                .usage("-d|-r -secret [FILE] -k [NUMBER] [-n [NUMBER] -dir [DIRECTORY]]");
 
         //Required Arguments
         //Note: -d and -r are both set as required: false because exactly one of the two is required
@@ -39,6 +38,9 @@ public class Main {
             if(ns.getBoolean("distribute").equals(ns.getBoolean("recover"))) {
                 throw new ArgumentParserException("Exactly ONE of -d (distribute) or -r (recover) is needed.", parser);
             }
+            if(ns.getInt("n") != null && ns.getBoolean("recover")) {
+				throw new ArgumentParserException("-n is only allowed with -d", parser);
+			}
         } catch (ArgumentParserException e) {
             parser.handleError(e);
             System.exit(1);
