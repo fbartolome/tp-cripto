@@ -59,7 +59,6 @@ public class BmpWriter {
      * @throws IOException If an I/O error occurs.
      */
     public void writeImage() throws IOException {
-        BmpParser la = new BmpParser("img/Albertssd.bmp");
         FileOutputStream fos = new FileOutputStream(this.file);
         fos.write(id.getBytes());
         fos.write(intToBytes(fileSize));
