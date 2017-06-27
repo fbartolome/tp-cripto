@@ -8,30 +8,31 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
 public class Distributor implements Worker {
-	
+
 	private int k;
 	private int n;
 	private BmpParser secretPicture;
 	private Random rnd;
 	private List<BmpParser> shadows;
-    private int seed;
-	
+	private int seed;
+
 	private Distributor() {
-        this.seed = new Random().nextInt(65536);		//2-byte seed
-        this.rnd = new Random(seed);					//Random number generator using that seed
-        this.shadows = new ArrayList<>();
+		this.seed = new Random().nextInt(65536);		//2-byte seed
+		this.rnd = new Random(seed);					//Random number generator using that seed
+		this.shadows = new ArrayList<>();
 	}
-	
+
 	public static Distributor createFromNamespace(final Namespace ns) throws Exception {
 
 		final Distributor distributor = new Distributor();
-		
+
 		distributor.k = ns.getInt("k");
 		Optional<Integer> optionalN = Optional.ofNullable(ns.getInt("n"));
 		distributor.n = optionalN.orElse(distributor.k);
@@ -166,11 +167,11 @@ public class Distributor implements Worker {
 	 * @param p The polynomial to evaluate.
 	 * @return The evaluations, where the first element is the evaluation in 1.
 	 */
-	private int[] makeEvaluations(final Polynomial p) {
-		int[] evaluations = new int[this.n];
-		
+	private BigInteger[] makeEvaluations(final Polynomial p) {
+		BigInteger[] evaluations = new BigInteger[this.n];
+
 		for (int i = 0; i < this.n; i++) {
-			evaluations[i] = p.evaluate(i+1) % 257;
+			evaluations[i] = p.evaluate(BigInteger.valueOf(i+1)).remainder(BigInteger.valueOf(257));
 		}
 		return evaluations;
 	}
@@ -181,15 +182,15 @@ public class Distributor implements Worker {
 	 * @param evaluations A polynomial's evaluations.
 	 * @return Whether the polynomial that created these values should be re-evaluated.
 	 */
-	private boolean shouldReevaluate(final int[] evaluations) {
-		for (int evaluation : evaluations) {
-			if (evaluation == 256) {
+	private boolean shouldReevaluate(final BigInteger[] evaluations) {
+		for (BigInteger evaluation : evaluations) {
+			if (evaluation.compareTo(BigInteger.valueOf(256)) == 0) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void work() {
 		final int numberOfPixels = this.secretPicture.getWidth() * this.secretPicture.getHeight();
@@ -197,48 +198,48 @@ public class Distributor implements Worker {
 		for (int i = 0; i < numberOfPixels; i++) {
 			randomPixels[i] = (byte) (this.secretPicture.getPictureData()[i] ^ this.rnd.nextInt(256));
 		}
-		
+
 		int j = 0;
 		int consumedBytes = 0;
-		
+
 		do {
-		
+
 			// build polynomial
 			Polynomial p = new Polynomial(0, 0);
-            for (int i = 0; i < this.k; i++) {
-                int b = randomPixels[consumedBytes++];
-                if(b < 0){
-                    b += 256;
-                }
-                p = p.plus(new Polynomial(b, i));
-            }
-			
+			for (int i = 0; i < this.k; i++) {
+				int b = randomPixels[consumedBytes++];
+				if(b < 0){
+					b += 256;
+				}
+				p = p.plus(new Polynomial(b, i));
+			}
+
 			boolean done = false;
-			int [] evaluations;
-			
+			BigInteger[] evaluations;
+
 			do {
-			
+
 				evaluations = makeEvaluations(p);
-				
+
 				if (shouldReevaluate(evaluations)) {
 					for (int i = 0; i < p.getCoefficients().length; i++) {
 						// Find the first non-zero coefficient and subtract 1 to it
-						int coef = p.getCoefficientAt(i);
-						if (coef != 0) {
-							p.alterCoefficientAt(i, coef - 1);
+						BigInteger coef = p.getCoefficientAt(i);
+						if (coef.compareTo(BigInteger.valueOf(0)) != 0) {
+							p.alterCoefficientAt(i, coef.subtract(BigInteger.valueOf(1)));
 							break;
 						}
-                    }
-                } else {
+					}
+				} else {
 					done = true;
 				}
-				
+
 			} while (!done);
-			
+
 			// update data in file
 			for (int i = 0; i < this.n; i++) {
 				final BmpParser pa = this.shadows.get(i);
-                hideByte((byte)evaluations[i], j, pa);
+				hideByte((byte)evaluations[i].intValue(), j, pa);
 			}
 			j++;
 		} while (consumedBytes < numberOfPixels && (j+1)*k < numberOfPixels);
@@ -277,12 +278,12 @@ public class Distributor implements Worker {
 	 */
 	private void hideByte(byte byteToHide, int j, BmpParser shadow){
 		String bits = Integer.toBinaryString(byteToHide & 255 | 256).substring(1);
-        for(int i = 0; i < 8; i++) {
+		for(int i = 0; i < 8; i++) {
 			byte oldByte = shadow.getPictureData()[8*j+i];
-            String oldByteStr = Integer.toBinaryString(oldByte & 255 | 256).substring(1);
-            String newByteStr = oldByteStr.substring(0,7) + bits.charAt(i);
-            byte newByte = (byte)Integer.parseInt(newByteStr, 2);
-            shadow.getPictureData()[8*j+i] = newByte;
-        }
+			String oldByteStr = Integer.toBinaryString(oldByte & 255 | 256).substring(1);
+			String newByteStr = oldByteStr.substring(0,7) + bits.charAt(i);
+			byte newByte = (byte)Integer.parseInt(newByteStr, 2);
+			shadow.getPictureData()[8*j+i] = newByte;
+		}
 	}
 }

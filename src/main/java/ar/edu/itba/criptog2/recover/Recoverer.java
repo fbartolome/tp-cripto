@@ -4,12 +4,13 @@ import ar.edu.itba.criptog2.Worker;
 import ar.edu.itba.criptog2.util.BmpParser;
 import ar.edu.itba.criptog2.util.BmpWriter;
 import ar.edu.itba.criptog2.util.LagrangeInterpolator;
+import ar.edu.itba.criptog2.util.Point;
 import ar.edu.itba.criptog2.util.Polynomial;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -81,8 +82,8 @@ public class Recoverer implements Worker {
 				}
 				this.pictures.add(shadow);
 				if(this.pictures.size() == k) {
-				    return;
-                }
+					return;
+				}
 			}
 		}
 
@@ -94,13 +95,14 @@ public class Recoverer implements Worker {
 		}
 	}
 
-	
+
 	@Override
 	public void work() {
 		List<Point> points;
+		
 		LagrangeInterpolator lagrangeInterpolator = new LagrangeInterpolator();
 		int byteCount = 0;
-		int[] coeffs;
+		BigInteger[] coeffs;
 		int height = k == 8 ? pictures.get(0).getHeight() : pictures.get(0).getSecretHeight();
 		int width = k == 8 ? pictures.get(0).getWidth() : pictures.get(0).getSecretWidth();
 		int secretPictureSize = width * height;
@@ -114,15 +116,24 @@ public class Recoverer implements Worker {
 			//Step 2: Find polynomial
 			Polynomial polynomial = lagrangeInterpolator.interpolate(points,257);
 			coeffs = polynomial.getCoefficients();
+			
+//			System.out.println(polynomial);
 
 			//Step 3: Build piece of secret picture
 			//When the coefficient of the largest degree of the polynomial is 0, it is written.
-            for (int i = coeffs.length; i < k ; i++) {
-                secretPicture[byteCount++] = 0;
-            }
-            for(int c : coeffs){
-				secretPicture[byteCount++] = (byte)c;
+			for (int i = 0; i < k; i++) {
+				if (i < coeffs.length) {
+					secretPicture[byteCount++] = (byte)coeffs[i].intValue();
+				} else {
+					secretPicture[byteCount++] = 0;
+				}
 			}
+//			for (int i = coeffs.length; i < k ; i++) {
+//				secretPicture[byteCount++] = 0;
+//			}
+//			for(int c : coeffs){
+//				secretPicture[byteCount++] = (byte)c;
+//			}
 			j++;
 		}
 
@@ -133,6 +144,7 @@ public class Recoverer implements Worker {
 		BmpWriter bmpWriter = getBmpWriter(height, width);
 		try {
 			bmpWriter.writeImage();
+			System.out.println("Wrote ouput to: " + secretFilePath);
 		} catch (IOException e) {
 			System.err.println("Error writing revealed secret: " + e.getMessage());
 			System.err.println("Aborting.");
@@ -167,7 +179,7 @@ public class Recoverer implements Worker {
 		byte[] picData = bmp.getPictureData();
 		StringBuilder byteStr = new StringBuilder();
 		for(int i = 0; i < 8; i++) {
-            byteStr.append(picData[8 * j + i] & 1);
+			byteStr.append(picData[8 * j + i] & 1);
 		}
 		return Integer.parseInt(byteStr.toString(), 2);
 	}
@@ -182,7 +194,7 @@ public class Recoverer implements Worker {
 	private void revealSecret(final int seed) {
 		Random rnd = new Random(seed);
 		for(int i = 0; i < secretPicture.length; i++) {
-			secretPicture[i] = (byte) ((int)secretPicture[i] ^ rnd.nextInt(256));
+			secretPicture[i] = (byte) ((secretPicture[i] & 0xff) ^ rnd.nextInt(256));
 		}
 	}
 

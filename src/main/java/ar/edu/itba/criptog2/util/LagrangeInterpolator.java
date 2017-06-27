@@ -1,6 +1,5 @@
 package ar.edu.itba.criptog2.util;
 
-import java.awt.Point;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -10,11 +9,11 @@ import java.util.List;
 public class LagrangeInterpolator {
 
     public Polynomial interpolate(List<Point> points, int modulo) {
-        if(points == null) {
+        if (points == null) {
             throw new IllegalArgumentException("xs and ys must not be null");
         }
         int size = points.size();
-        if(size < 2) {
+        if (size < 2) {
             throw new IllegalArgumentException("Need at least 2 points to interpolate");
         }
 
@@ -26,11 +25,11 @@ public class LagrangeInterpolator {
             for (int j = 0; j < size; j++) {
                 if(j != i) {
                     denominator *= (points.get(i).getX() - points.get(j).getX());
-                    Polynomial x = new Polynomial(1, 1).minus(new Polynomial((int)points.get(j).getX(), 0)); // (1 * x^1 - xs[i] * x^0)
+                    Polynomial x = new Polynomial(1, 1).minus(new Polynomial(points.get(j).getX(), 0)); // (1 * x^1 - xs[i] * x^0)
                     numerator = numerator.times(x);
                 }
             }
-            int coefficient = (int)points.get(i).getY() * modInverse(denominator, modulo);
+            int coefficient = points.get(i).getY() * modInverse(denominator, modulo);
             Polynomial term = numerator.times(new Polynomial(coefficient, 0));
             nonModuloResult = nonModuloResult.plus(term);
         }
@@ -38,9 +37,9 @@ public class LagrangeInterpolator {
         // Apply modulo at the end
         Polynomial result = new Polynomial(0, 0);
         for (int degree = nonModuloResult.getDegree(); degree >= 0 ; degree--) {
-            int moduloExponent = nonModuloResult.getCoefficients()[degree] % modulo;
-            if(moduloExponent < 0) {
-                moduloExponent += modulo;
+            BigInteger moduloExponent = nonModuloResult.getCoefficients()[degree].remainder(BigInteger.valueOf(modulo));
+            if (moduloExponent.compareTo(BigInteger.ZERO) < 0) {
+                moduloExponent = moduloExponent.add(BigInteger.valueOf(modulo));
             }
             result = result.plus(new Polynomial(moduloExponent, degree));
         }

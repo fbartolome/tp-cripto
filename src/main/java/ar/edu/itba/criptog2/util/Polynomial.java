@@ -1,5 +1,7 @@
 package ar.edu.itba.criptog2.util;
 
+import java.math.BigInteger;
+
 /******************************************************************************
  *  Compilation:  javac Polynomial.java
  *  Execution:    java Polynomial
@@ -20,7 +22,6 @@ package ar.edu.itba.criptog2.util;
  *
  ******************************************************************************/
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,21 +32,34 @@ import java.util.List;
  * @see <a href="http://introcs.cs.princeton.edu/java/92symbolic/Polynomial.java.html">Source</a>
  */
 public class Polynomial {
-    private int[] coef;  // coefficients
+    private BigInteger[] coef;  // coefficients
     private int deg;     // degree of polynomial (0 for the zero polynomial)
 
     // a * x^b
     public Polynomial(int a, int b) {
-        coef = new int[b+1];
-        coef[b] = a;
+        coef = new BigInteger[b+1];
+        for (int i = 0; i < b; i++) {
+        	coef[i] = BigInteger.ZERO;
+        }
+        coef[b] = BigInteger.valueOf(a);
+        
         deg = degree();
     }
+    
+    public Polynomial(BigInteger a, int b) {
+      coef = new BigInteger[b+1];
+      for (int i = 0; i < b; i++) {
+      	coef[i] = BigInteger.ZERO;
+      }
+      coef[b] = a;
+      deg = degree();
+  }
 
     // return the degree of this polynomial (0 for the zero polynomial)
     private int degree() {
         int d = 0;
         for (int i = 0; i < coef.length; i++)
-            if (coef[i] != 0) d = i;
+            if (!coef[i].equals(0)) d = i;
         return d;
     }
 
@@ -53,8 +67,8 @@ public class Polynomial {
     public Polynomial plus(Polynomial b) {
         Polynomial a = this;
         Polynomial c = new Polynomial(0, Math.max(a.deg, b.deg));
-        for (int i = 0; i <= a.deg; i++) c.coef[i] += a.coef[i];
-        for (int i = 0; i <= b.deg; i++) c.coef[i] += b.coef[i];
+        for (int i = 0; i <= a.deg; i++) c.coef[i] = c.coef[i].add(a.coef[i]);
+        for (int i = 0; i <= b.deg; i++) c.coef[i] = c.coef[i].add(b.coef[i]);
         c.deg = c.degree();
         return c;
     }
@@ -63,8 +77,8 @@ public class Polynomial {
     public Polynomial minus(Polynomial b) {
         Polynomial a = this;
         Polynomial c = new Polynomial(0, Math.max(a.deg, b.deg));
-        for (int i = 0; i <= a.deg; i++) c.coef[i] += a.coef[i];
-        for (int i = 0; i <= b.deg; i++) c.coef[i] -= b.coef[i];
+        for (int i = 0; i <= a.deg; i++) c.coef[i] = c.coef[i].add(a.coef[i]);
+        for (int i = 0; i <= b.deg; i++) c.coef[i] = c.coef[i].subtract(b.coef[i]);
         c.deg = c.degree();
         return c;
     }
@@ -75,7 +89,7 @@ public class Polynomial {
         Polynomial c = new Polynomial(0, a.deg + b.deg);
         for (int i = 0; i <= a.deg; i++)
             for (int j = 0; j <= b.deg; j++)
-                c.coef[i+j] += (a.coef[i] * b.coef[j]);
+                c.coef[i+j] = c.coef[i+j].add(a.coef[i].multiply(b.coef[j]));
         c.deg = c.degree();
         return c;
     }
@@ -103,10 +117,10 @@ public class Polynomial {
 
 
     // use Horner's method to compute and return the polynomial evaluated at x
-    public int evaluate(int x) {
-        int p = 0;
+    public BigInteger evaluate(BigInteger x) {
+        BigInteger p = BigInteger.valueOf(0);
         for (int i = deg; i >= 0; i--)
-            p = coef[i] + (x * p);
+            p = coef[i].add(x.multiply(p));
         return p;
     }
 
@@ -116,7 +130,7 @@ public class Polynomial {
         Polynomial deriv = new Polynomial(0, deg - 1);
         deriv.deg = deg - 1;
         for (int i = 0; i < deg; i++)
-            deriv.coef[i] = (i + 1) * coef[i + 1];
+            deriv.coef[i] = coef[i + 1].multiply(BigInteger.valueOf(i + 1));//  (i + 1) * ;
         return deriv;
     }
 
@@ -126,24 +140,24 @@ public class Polynomial {
         if (deg ==  1) return coef[1] + "x + " + coef[0];
         String s = coef[deg] + "x^" + deg;
         for (int i = deg-1; i >= 0; i--) {
-            if      (coef[i] == 0) continue;
-            else if (coef[i]  > 0) s = s + " + " + ( coef[i]);
-            else if (coef[i]  < 0) s = s + " - " + (-coef[i]);
+            if      (coef[i].equals(0)) continue;
+            else if (coef[i].compareTo(BigInteger.valueOf(0))  > 0) s = s + " + " + ( coef[i]);
+            else if (coef[i].compareTo(BigInteger.valueOf(0))  < 0) s = s + " - " + (coef[i].multiply(BigInteger.valueOf(-1)));
             if      (i == 1) s = s + "x";
             else if (i >  1) s = s + "x^" + i;
         }
         return s;
     }
 
-    public int[] getCoefficients() {
+    public BigInteger[] getCoefficients() {
         return Arrays.copyOf(coef, coef.length);
     }
     
-    public int getCoefficientAt(int index) {
+    public BigInteger getCoefficientAt(int index) {
     	return coef[index];
     }
     
-    public Polynomial alterCoefficientAt(int index, int value) {
+    public Polynomial alterCoefficientAt(int index, BigInteger value) {
     	coef[index] = value;
     	return this;
     }
@@ -185,7 +199,7 @@ public class Polynomial {
         System.out.println("p(x) * q(x) = " + s);
         System.out.println("p(q(x))     = " + t);
         System.out.println("0 - p(x)    = " + zero.minus(p));
-        System.out.println("p(3)        = " + p.evaluate(3));
+        System.out.println("p(3)        = " + p.evaluate(BigInteger.valueOf(3)));
         System.out.println("p'(x)       = " + p.differentiate());
         System.out.println("p''(x)      = " + p.differentiate().differentiate());
     }
